@@ -3,9 +3,9 @@ import logging
 import math
 
 import numpy as np
-from optimization_functions.optimization_functions import rastrigins_function
 
 from evolutionary_algorithms.evolutionary_algorithm import EvolutionaryAlgorithm
+from optimization_functions.optimization_functions import rastrigins_function
 
 
 class MVMO(EvolutionaryAlgorithm):
@@ -49,6 +49,7 @@ class MVMO(EvolutionaryAlgorithm):
         self.val_shape_factor_sd = val_shape_factor_sd
         self.kd = 0.0505 / self.dimensions + 1.0
         self.n_best_size = 10
+        self.current_mutation_position = 0
 
     def optimize(self, population: list[np.ndarray], optimize_function: callable):
         """
@@ -168,11 +169,10 @@ class MVMO(EvolutionaryAlgorithm):
         :rtype:
         """
         population = copy.deepcopy(population)
-        current_position = 0
 
         for individual in population:
             for _ in range(self.mutation_size):
-                ind = current_position % self.dimensions
+                ind = self.current_mutation_position % self.dimensions
                 si = None
                 si, si1, si2 = self.count_si(
                     best_individual[ind], mean_individual[ind], var_individual[ind], si
@@ -183,9 +183,9 @@ class MVMO(EvolutionaryAlgorithm):
                     si1,
                     si2,
                 )
-                current_position += 1
+                self.current_mutation_position += 1
             for i in range(self.dimensions - self.mutation_size):
-                ind = (current_position + i) % self.dimensions
+                ind = (self.current_mutation_position + i) % self.dimensions
                 individual[ind] = best_individual[ind]
 
         return population
