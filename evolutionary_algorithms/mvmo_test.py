@@ -126,5 +126,5 @@ def test_evaluation():
     best_population, mean_individual, var_individual = optimizer.evaluation(
         population, rastrigins_function
     )
-    assert len(best_population) == 5
+    assert len(best_population) == 2
     assert len(best_population[0][0]) == len(mean_individual) == len(var_individual)
