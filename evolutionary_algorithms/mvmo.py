@@ -71,7 +71,6 @@ class MVMO(EvolutionaryAlgorithm):
                 self.n_best_size,
                 best_population,
             )
-
             if best_individual is None:
                 best_individual = best_population[0]
             elif (
@@ -194,22 +193,24 @@ class MVMO(EvolutionaryAlgorithm):
         self,
         population: list[np.ndarray],
         fitness_function: callable,
-        n_best_size: int = 10,
+        n_best_size: int = 2,
         best_population=None,
     ) -> tuple:
-        # TODO: n_best_size
-        if best_population is not None:
-            population = population + [ind[0] for ind in best_population]
 
         # best_population = normalized individuals with
         # fitness values calculated for denormalized individuals
         denormalized_population = self.denormalize_population(population)
 
+        evaluated_population = [
+            (n_ind, fitness_function(dn_ind))
+            for n_ind, dn_ind in zip(population, denormalized_population)
+        ]
+
+        if best_population is not None:
+            evaluated_population = evaluated_population + best_population
+
         best_population = sorted(
-            [
-                (n_ind, fitness_function(dn_ind))
-                for n_ind, dn_ind in zip(population, denormalized_population)
-            ],
+            evaluated_population,
             key=lambda ind: ind[1],
             reverse=self.maximize,
         ).copy()[:n_best_size]
