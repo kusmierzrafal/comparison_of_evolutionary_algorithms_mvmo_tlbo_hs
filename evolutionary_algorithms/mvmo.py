@@ -216,7 +216,8 @@ class MVMO(EvolutionaryAlgorithm):
         ).copy()[:n_best_size]
 
         mean_individual = np.mean([ind[0] for ind in best_population], axis=0)
-        var_individual = np.mean([ind[0] for ind in best_population], axis=0)
+        var_individual = np.var([ind[0] for ind in best_population], axis=0)
+
         return best_population, mean_individual, var_individual
 
 
