@@ -77,9 +77,16 @@ def test_transformation():
 
 def test_count_si():
     optimizer = MVMO(10000, 5, (-5.12, 5.12), True, 3)
-    last_no_zero_si = 20
-    assert optimizer.count_si(0.5, 0.5, np.nan, last_no_zero_si)[0] == last_no_zero_si
-    assert optimizer.count_si(0.5, 0.5, np.inf, last_no_zero_si)[0] == last_no_zero_si
+    last_no_zero_var_gene = 20
+    last_no_zero_si = -1 * np.log(last_no_zero_var_gene) * 1
+    assert (
+        optimizer.count_si(0.5, 0.5, np.nan, last_no_zero_var_gene)[0]
+        == last_no_zero_si
+    )
+    assert (
+        optimizer.count_si(0.5, 0.5, np.inf, last_no_zero_var_gene)[0]
+        == last_no_zero_si
+    )
 
 
 def test_mutation():

@@ -50,6 +50,7 @@ class MVMO(EvolutionaryAlgorithm):
         self.kd = 0.0505 / self.dimensions + 1.0
         self.n_best_size = 10
         self.current_mutation_position = 0
+        self.last_no_zero_var_ind = np.ones(self.dimensions)
 
     def optimize(self, population: list[np.ndarray], optimize_function: callable):
         """
@@ -124,27 +125,29 @@ class MVMO(EvolutionaryAlgorithm):
             - transform(0)
         )
 
-    def count_si(self, best_gene, mean_gene, var_gene, last_no_zero_si):
-        if not np.isfinite(var_gene):
-            si1 = si2 = last_no_zero_si
-            if last_no_zero_si < self.val_shape_factor_sd:
+    def count_si(self, best_gene, mean_gene, var_gene, last_no_zero_var_gene):
+
+        if not np.isfinite(var_gene) or var_gene == 0:
+            last_no_zero_si = (
+                -1 * np.log(last_no_zero_var_gene) * self.shaping_scaling_factor_fs
+            )
+            si = si1 = si2 = last_no_zero_si
+            if si < self.val_shape_factor_sd:
                 self.val_shape_factor_sd = self.val_shape_factor_sd * self.kd
                 si1 = self.val_shape_factor_sd
-            elif last_no_zero_si > self.val_shape_factor_sd:
+            elif si > self.val_shape_factor_sd:
                 self.val_shape_factor_sd = self.val_shape_factor_sd / self.kd
                 si1 = self.val_shape_factor_sd
-            return last_no_zero_si, si1, si2
-
-        si = -1 * np.log(var_gene) * self.shaping_scaling_factor_fs
+        else:
+            si = -1 * np.log(var_gene) * self.shaping_scaling_factor_fs
+            si1 = si
+            si2 = si
 
         if best_gene < mean_gene:
-            si1 = si
             si2 = si * self.asymmetry_factor_af
         elif best_gene > mean_gene:
             si1 = si * self.asymmetry_factor_af
-            si2 = si
-        else:
-            si1 = si2 = si
+
         return si, si1, si2
 
     def mutation(
@@ -168,13 +171,14 @@ class MVMO(EvolutionaryAlgorithm):
         :rtype:
         """
         population = copy.deepcopy(population)
-
         for individual in population:
             for _ in range(self.mutation_size):
                 ind = self.current_mutation_position % self.dimensions
-                si = None
                 si, si1, si2 = self.count_si(
-                    best_individual[ind], mean_individual[ind], var_individual[ind], si
+                    best_individual[ind],
+                    mean_individual[ind],
+                    var_individual[ind],
+                    self.last_no_zero_var_ind[ind],
                 )
                 individual[ind] = self.transformation(
                     np.random.uniform(low=0, high=1, size=(1,))[0],
@@ -217,6 +221,14 @@ class MVMO(EvolutionaryAlgorithm):
 
         mean_individual = np.mean([ind[0] for ind in best_population], axis=0)
         var_individual = np.var([ind[0] for ind in best_population], axis=0)
+        self.last_no_zero_var_ind = np.asarray(
+            [
+                new if (new != 0 and np.isfinite(new)) else last_non_zero
+                for (new, last_non_zero) in zip(
+                    var_individual, self.last_no_zero_var_ind
+                )
+            ]
+        )
 
         return best_population, mean_individual, var_individual
 
