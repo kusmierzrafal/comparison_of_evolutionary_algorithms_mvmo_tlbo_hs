@@ -34,8 +34,10 @@ class TLBO(EvolutionaryAlgorithm):
 
         if self.maximize:
             self.get_better = self.get_better_max
+            self.cross = self.cross_max
         elif not self.maximize:
             self.get_better = self.get_better_min
+            self.cross = self.cross_min
 
     @staticmethod
     def get_better_max(new_population, old_population):
@@ -52,6 +54,28 @@ class TLBO(EvolutionaryAlgorithm):
             for new_ind, ind in zip(new_population, old_population)
         ]
         return better_population
+
+    @staticmethod
+    def cross_better(ind, ind_to_cross, random_factor):
+        return ind + random_factor * (ind - ind_to_cross)
+
+    @staticmethod
+    def cross_worse(ind, ind_to_cross, random_factor):
+        return ind + random_factor * (ind_to_cross - ind)
+
+    def cross_max(self, ind, ind_to_cross, random_factor):
+        if ind[1] > ind_to_cross[1]:
+            new_ind = self.cross_better(ind[0], ind_to_cross[0], random_factor)
+        else:
+            new_ind = self.cross_worse(ind[0], ind_to_cross[0], random_factor)
+        return new_ind
+
+    def cross_min(self, ind, ind_to_cross, random_factor):
+        if ind[1] < ind_to_cross[1]:
+            new_ind = self.cross_better(ind[0], ind_to_cross[0], random_factor)
+        else:
+            new_ind = self.cross_worse(ind[0], ind_to_cross[0], random_factor)
+        return new_ind
 
     def optimize(self, population: list[np.ndarray], optimize_function: callable):
         """
@@ -87,7 +111,7 @@ class TLBO(EvolutionaryAlgorithm):
                 crossed_population, optimize_function
             )[0]
             evaluated_crossed_population = self.get_better(
-                evaluated_mutated_population, evaluated_crossed_population
+                evaluated_crossed_population, evaluated_mutated_population
             )
 
             best_individual = sorted(
@@ -115,7 +139,7 @@ class TLBO(EvolutionaryAlgorithm):
         :return: evaluated mutated population
         :rtype: list[tuple[numpy.ndarray, float]]
         """
-        random_factor = np.array([random() for _ in range(len(mean_individual))])
+        random_factor = np.array([random() for _ in range(self.dimensions)])
         mutagen = random_factor * (
             best_individual - self.teaching_factor * mean_individual
         )
@@ -186,7 +210,8 @@ class TLBO(EvolutionaryAlgorithm):
         :rtype: list[numpy.ndarray]
         """
         crossed_population: list[np.ndarray] = []
-        r = random()
+        random_factor = np.array([random() for _ in range(self.dimensions)])
+
         for ind in evaluated_population:
             to_choose = list(
                 filter(lambda individual: individual[1] != ind[1], evaluated_population)
@@ -196,25 +221,7 @@ class TLBO(EvolutionaryAlgorithm):
             else:
                 ind_to_cross = choice(to_choose)
 
-            if self.maximize:
-                if ind[1] > ind_to_cross[1]:
-                    new_ind = np.array(
-                        [g1 + r * (g1 - g2) for g1, g2 in zip(ind[0], ind_to_cross[0])]
-                    )
-                else:
-                    new_ind = np.array(
-                        [g1 + r * (g2 - g1) for g1, g2 in zip(ind[0], ind_to_cross[0])]
-                    )
-            else:
-                if ind[1] < ind_to_cross[1]:
-                    new_ind = np.array(
-                        [g1 + r * (g1 - g2) for g1, g2 in zip(ind[0], ind_to_cross[0])]
-                    )
-                else:
-                    new_ind = np.array(
-                        [g1 + r * (g2 - g1) for g1, g2 in zip(ind[0], ind_to_cross[0])]
-                    )
-
+            new_ind = self.cross(ind, ind_to_cross, random_factor)
             new_ind = self.ensure_boundaries_individual(new_ind)
 
             crossed_population.append(new_ind)
