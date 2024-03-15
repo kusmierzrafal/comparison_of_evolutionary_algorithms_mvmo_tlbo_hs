@@ -55,23 +55,26 @@ class MVMO():
         solutions_d = []
         metrics_d = {}
 
-        if x_initial:
-            x0 = (np.asarray(x_initial) - min_b) / diff
-            x0_denorm = min_b + x0 * diff
-            # evaluate initial fitness
-            a = obj_fun(x0_denorm.tolist())
-            # check if contraints are met
-            sol_good = self.constraint_check(x0_denorm.tolist(), cons)
+        if type(x_initial) == np.ndarray:
+            x0 = x_initial
+            for item in x0:
+                # denormalise solution
+                x0_denorm = min_b + item * diff
 
-            if sol_good:
-                fitness = round(a, 4)
-            else:
-                fitness = 1e10  # penalty for constraint violation
+                # evaluate initial fitness
+                a = obj_fun(x0_denorm.tolist())
+                # check if contraints are met
+                sol_good = self.constraint_check(x0_denorm.tolist(), cons)
 
-            convergence.append(fitness)
-            # fill the fitness dataframe with fitness value, solution vector, mean, shape, and d-factor
+                if sol_good:
+                    fitness = round(a, 4)
+                else:
+                    fitness = 1e10  # penalty for constraint violation
 
-            solutions_d.append((fitness, tuple(x0.tolist())))
+                convergence.append(fitness)
+                # fill the fitness dataframe with fitness value, solution vector, mean, shape, and d-factor
+
+                solutions_d.append((fitness, tuple(item.tolist())))
         else:
             # initial population
             x0 = lhs(self.population_size, D).T
