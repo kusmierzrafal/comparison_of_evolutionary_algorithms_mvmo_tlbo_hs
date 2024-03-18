@@ -75,6 +75,9 @@ def levy_function(vec: np.ndarray) -> float:
     :return: value of function
     :rtype: float
     """
+    # casting added for other implementation of mvmo comparison
+    vec = np.asarray(vec)
+
     vec_w = 1 + (vec - 1) / 4
     return (
         np.sin(math.pi * vec_w[0]) ** 2
