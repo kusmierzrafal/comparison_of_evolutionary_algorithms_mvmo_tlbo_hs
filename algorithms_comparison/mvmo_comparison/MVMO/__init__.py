@@ -146,7 +146,8 @@ class MVMO():
                 # maybe increase quadratically or someway with number of iterations.
                 # when no improvement in solutions is observed, change it back to one for more explorstion\
                 #                scaling_factor = 1 + (i/self.iterations)*(19)
-                scaling_factor = 1 + (i ** 2.4)  # <--- new scaling factor
+                # scaling_factor = 1 + (i ** 2.4)  # <--- new scaling factor
+                scaling_factor = 1.  # <--- new scaling factor
 
                 if i > 500 and np.var(convergence[-50:]) < self.eps and bool(random.getrandbits(1)):
                     scaling_factor = 1.  # <--- new scaling. previously was 2.
