@@ -3,9 +3,6 @@ import pickle
 import random
 
 import numpy as np
-from algorithms_comparison.mvmo_comparison.MVMO import MVMO as another_MVMO
-from evolutionary_algorithms.mvmo import MVMO
-
 from compare_mvmo_consts import (
     COMPARISON_BOUNDARIES,
     COMPARISON_FUNCTIONS,
@@ -18,6 +15,10 @@ from compare_mvmo_consts import (
     RESULT_FILE,
     SEED,
 )
+from tqdm import tqdm
+
+from algorithms_comparison.mvmo_comparison.MVMO import MVMO as another_MVMO
+from evolutionary_algorithms.mvmo import MVMO
 
 logging.basicConfig(filename=RESULT_FILE, filemode="w", format="%(message)s")
 
@@ -35,7 +36,7 @@ for function, boundaries, list_boundaries in zip(
         my_results = []
         other_results = []
 
-        for i in range(POPULATIONS):
+        for i in tqdm(range(POPULATIONS)):
             with open(f"./populations/init_pop_{pop_size}_nr_{i+1}", "rb") as handle:
                 population = pickle.load(handle)
 
