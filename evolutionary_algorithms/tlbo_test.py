@@ -1,16 +1,16 @@
 import numpy as np
 
 from evolutionary_algorithms.tlbo import TLBO
-from optimization_functions.optimization_functions import rastrigins_function
+from optimization_functions.optimization_functions import zakharov_function
 
 
 def test_mutation():
     dimensions = 6
     boundaries = (-5.12, 5.12)
-    optimizer = TLBO(1, dimensions, boundaries, maximize=True)
+    optimizer = TLBO(1, dimensions, boundaries)
     population = optimizer.init_population(5)
     evaluated_population, best_individual, mean_individual = optimizer.evaluation(
-        population, rastrigins_function
+        population, zakharov_function
     )
     mutated_population = optimizer.mutation(
         population, best_individual[0], mean_individual
@@ -27,7 +27,7 @@ def test_evaluation():
     def sphere_function(x):
         return x[0] ** 2 + x[1] ** 2
 
-    optimizer = TLBO(1, dimensions, boundaries, maximize=False)
+    optimizer = TLBO(1, dimensions, boundaries)
     population = optimizer.init_population(5)
     evaluated_population, best_individual, mean_individual = optimizer.evaluation(
         population, sphere_function
@@ -39,16 +39,16 @@ def test_evaluation():
         sphere_function(best_individual[0]) <= ind[1] for ind in evaluated_population
     )
 
-    optimizer = TLBO(1, dimensions, boundaries, maximize=True)
+    optimizer = TLBO(1, dimensions, boundaries)
     population = optimizer.init_population(5)
     evaluated_population, best_individual, mean_individual = optimizer.evaluation(
-        population, rastrigins_function
+        population, zakharov_function
     )
 
     assert len(best_individual) == dimensions
     assert len(mean_individual) == dimensions
     assert all(
-        rastrigins_function(best_individual[0]) >= ind[1]
+        zakharov_function(best_individual[0]) <= ind[1]
         for ind in evaluated_population
     )
 
@@ -56,10 +56,10 @@ def test_evaluation():
 def test_crossover():
     dimensions = 6
     boundaries = (-5.12, 5.12)
-    optimizer = TLBO(1, dimensions, boundaries, maximize=True)
+    optimizer = TLBO(1, dimensions, boundaries)
     population = optimizer.init_population(5)
     evaluated_population, best_individual, mean_individual = optimizer.evaluation(
-        population, rastrigins_function
+        population, zakharov_function
     )
     crossed_population = optimizer.crossover(evaluated_population)
     assert len(crossed_population) == len(population)
@@ -69,7 +69,7 @@ def test_crossover():
 def test_ensure_boundaries_individual():
     dimensions = 6
     boundaries = (-5.12, 5.12)
-    optimizer = TLBO(1, dimensions, boundaries, maximize=True)
+    optimizer = TLBO(1, dimensions, boundaries)
 
     individual_over_boundaries = np.asarray([-10, 10, -10, 10, -10, 10])
 

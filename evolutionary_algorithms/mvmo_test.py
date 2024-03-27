@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from evolutionary_algorithms.mvmo import MVMO
-from optimization_functions.optimization_functions import rastrigins_function
+from optimization_functions.optimization_functions import zakharov_function
 
 
 def test_init_population():
-    optimizer = MVMO(10000, 3, (-5.12, 5.12), True, 2)
+    optimizer = MVMO(10000, 3, (-5.12, 5.12), 2)
     population_1 = optimizer.normalize_population(optimizer.init_population(size=3))
     population_2 = optimizer.init_population(10)
 
@@ -25,7 +25,7 @@ def test_init_population():
 
 
 def test_de_normalize_population():
-    optimizer = MVMO(10000, 5, (-5.12, 5.12), True, 3)
+    optimizer = MVMO(10000, 5, (-5.12, 5.12), 3)
     population = optimizer.init_population(5)
     normalized_population = optimizer.normalize_population(population)
     denormalized_population = optimizer.denormalize_population(normalized_population)
@@ -76,7 +76,7 @@ def test_transformation():
 
 
 def test_count_si():
-    optimizer = MVMO(10000, 5, (-5.12, 5.12), True, 3)
+    optimizer = MVMO(10000, 5, (-5.12, 5.12), 3)
     last_no_zero_var_gene = 20
     last_no_zero_si = -1 * np.log(last_no_zero_var_gene) * 1
     assert (
@@ -90,11 +90,11 @@ def test_count_si():
 
 
 def test_mutation():
-    optimizer = MVMO(1000, 6, (-5.12, 5.12), True, 2)
+    optimizer = MVMO(1000, 6, (-5.12, 5.12), 2)
     population = optimizer.init_population(4)
     normalized_population = optimizer.normalize_population(population)
     best_population, mean_individual, var_individual = optimizer.evaluation(
-        normalized_population, rastrigins_function
+        normalized_population, zakharov_function
     )
     best_individual = best_population[0][0]
     mutated_population = optimizer.mutation(
@@ -129,11 +129,11 @@ def test_mutation():
 
 
 def test_evaluation():
-    optimizer = MVMO(1000, 6, (-5.12, 5.12), True, 3)
+    optimizer = MVMO(1000, 6, (-5.12, 5.12), 3)
     population = optimizer.init_population(5)
 
     best_population, mean_individual, var_individual = optimizer.evaluation(
-        population, rastrigins_function
+        population, zakharov_function
     )
     assert len(best_population) == 2
     assert len(best_population[0][0]) == len(mean_individual) == len(var_individual)

@@ -1,11 +1,12 @@
 import copy
 import logging
 import math
+import random
 
 import numpy as np
 
 from evolutionary_algorithms.evolutionary_algorithm import EvolutionaryAlgorithm
-from optimization_functions.optimization_functions import rastrigins_function
+from optimization_functions.optimization_functions import zakharov_function
 
 
 class MVMO(EvolutionaryAlgorithm):
@@ -14,7 +15,6 @@ class MVMO(EvolutionaryAlgorithm):
         iterations: int,
         dimensions: int,
         boundaries: tuple[float, float],
-        maximize: bool,
         mutation_size: int,
         shaping_scaling_factor_fs=1.0,
         asymmetry_factor_af=1.0,
@@ -28,8 +28,6 @@ class MVMO(EvolutionaryAlgorithm):
         :type dimensions: int
         :param boundaries: lower and higher limit of the range of every gene
         :type boundaries: tuple of floats
-        :param maximize: True for maximization, False for minimization
-        :type maximize: bool
         :param mutation_size: number of genes to be mutated
         :type mutation_size: int
         :param shaping_scaling_factor_fs: between 0.9 and 1.0
@@ -42,7 +40,7 @@ class MVMO(EvolutionaryAlgorithm):
         """
         logging.basicConfig(filename="mvmo.log", filemode="a", format="%(message)s")
 
-        super().__init__(iterations, dimensions, boundaries, maximize)
+        super().__init__(iterations, dimensions, boundaries)
         self.mutation_size = mutation_size
         self.shaping_scaling_factor_fs = shaping_scaling_factor_fs
         self.asymmetry_factor_af = asymmetry_factor_af
@@ -74,11 +72,7 @@ class MVMO(EvolutionaryAlgorithm):
             )
             if best_individual is None:
                 best_individual = best_population[0]
-            elif (
-                (best_population[0][1] > best_individual[1])
-                if self.maximize
-                else (best_population[0][1] < best_individual[1])
-            ):
+            elif best_population[0][1] < best_individual[1]:
                 best_individual = best_population[0]
 
             normalized_population = self.mutation(
@@ -216,7 +210,6 @@ class MVMO(EvolutionaryAlgorithm):
         best_population = sorted(
             evaluated_population,
             key=lambda ind: ind[1],
-            reverse=self.maximize,
         ).copy()[:n_best_size]
 
         mean_individual = np.mean([ind[0] for ind in best_population], axis=0)
@@ -234,7 +227,10 @@ class MVMO(EvolutionaryAlgorithm):
 
 
 if __name__ == "__main__":
+    np.random.seed(42)
+    random.seed(42)
+
     boundaries = (-5.12, 5.12)
-    optimizer = MVMO(10000, 6, boundaries, True, 3)
+    optimizer = MVMO(10, 6, boundaries, 3)
     population = optimizer.init_population(1000)
-    optimizer.optimize(population, rastrigins_function)
+    optimizer.optimize(population, zakharov_function)

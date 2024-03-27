@@ -1,10 +1,10 @@
 import logging
-from random import choice, randint, random
+from random import choice, randint, random, seed
 
 import numpy as np
 
 from evolutionary_algorithms.evolutionary_algorithm import EvolutionaryAlgorithm
-from optimization_functions.optimization_functions import rastrigins_function
+from optimization_functions.optimization_functions import zakharov_function
 
 
 class TLBO(EvolutionaryAlgorithm):
@@ -13,7 +13,6 @@ class TLBO(EvolutionaryAlgorithm):
         iterations: int,
         dimensions: int,
         boundaries: tuple[float, float],
-        maximize: bool,
     ):
         """
         Teaching Learning Based Optimization Algorithm
@@ -23,32 +22,15 @@ class TLBO(EvolutionaryAlgorithm):
         :type dimensions: int
         :param boundaries: lower and higher limit of the range of every gene
         :type boundaries: tuple of floats
-        :param maximize: True for maximization, False for minimization
-        :type maximize: bool
         """
         self.teaching_factor = randint(1, 2)
 
         logging.basicConfig(filename="tlbo.log", filemode="a", format="%(message)s")
 
-        super().__init__(iterations, dimensions, boundaries, maximize)
-
-        if self.maximize:
-            self.get_better = self.get_better_max
-            self.cross = self.cross_max
-        elif not self.maximize:
-            self.get_better = self.get_better_min
-            self.cross = self.cross_min
+        super().__init__(iterations, dimensions, boundaries)
 
     @staticmethod
-    def get_better_max(new_population, old_population):
-        better_population = [
-            new_ind if new_ind[1] > ind[1] else ind
-            for new_ind, ind in zip(new_population, old_population)
-        ]
-        return better_population
-
-    @staticmethod
-    def get_better_min(new_population, old_population):
+    def get_better(new_population, old_population):
         better_population = [
             new_ind if new_ind[1] < ind[1] else ind
             for new_ind, ind in zip(new_population, old_population)
@@ -63,14 +45,7 @@ class TLBO(EvolutionaryAlgorithm):
     def cross_worse(ind, ind_to_cross, random_factor):
         return ind + random_factor * (ind_to_cross - ind)
 
-    def cross_max(self, ind, ind_to_cross, random_factor):
-        if ind[1] > ind_to_cross[1]:
-            new_ind = self.cross_better(ind[0], ind_to_cross[0], random_factor)
-        else:
-            new_ind = self.cross_worse(ind[0], ind_to_cross[0], random_factor)
-        return new_ind
-
-    def cross_min(self, ind, ind_to_cross, random_factor):
+    def cross(self, ind, ind_to_cross, random_factor):
         if ind[1] < ind_to_cross[1]:
             new_ind = self.cross_better(ind[0], ind_to_cross[0], random_factor)
         else:
@@ -117,11 +92,9 @@ class TLBO(EvolutionaryAlgorithm):
             best_individual = sorted(
                 evaluated_crossed_population,
                 key=lambda ind: ind[1],
-                reverse=self.maximize,
             )[0]
             evaluated_population = evaluated_crossed_population
             mean_individual = np.mean([ind[0] for ind in evaluated_population], axis=0)
-
         return best_individual[0]
 
     def mutation(
@@ -159,9 +132,7 @@ class TLBO(EvolutionaryAlgorithm):
         :rtype: tuple[list[tuple[numpy.ndarray, float]], numpy.ndarray, numpy.ndarray]
         """
         evaluated_population = [(ind, fitness_function(ind)) for ind in population]
-        best_individual = sorted(
-            evaluated_population, key=lambda ind: ind[1], reverse=self.maximize
-        )[0]
+        best_individual = sorted(evaluated_population, key=lambda ind: ind[1])[0]
         mean_individual = np.mean(population, axis=0)
 
         return evaluated_population, best_individual, mean_individual
@@ -229,7 +200,9 @@ class TLBO(EvolutionaryAlgorithm):
 
 
 if __name__ == "__main__":
+    seed(42)
+    np.random.seed(42)
     boundaries = (-5.12, 5.12)
-    optimizer = TLBO(1000, 6, boundaries, True)
+    optimizer = TLBO(10, 6, boundaries)
     population = optimizer.init_population(50)
-    optimizer.optimize(population, rastrigins_function)
+    optimizer.optimize(population, zakharov_function)

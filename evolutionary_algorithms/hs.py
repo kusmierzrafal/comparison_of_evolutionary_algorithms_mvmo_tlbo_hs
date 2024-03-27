@@ -14,7 +14,6 @@ class HS(EvolutionaryAlgorithm):
         iterations: int,
         dimensions: int,
         boundaries: tuple[float, float],
-        maximize: bool,
         hmcr: float,
     ):
         """
@@ -25,14 +24,12 @@ class HS(EvolutionaryAlgorithm):
         :type dimensions: int
         :param boundaries: lower and higher limit of the range of every gene
         :type boundaries: tuple of floats
-        :param maximize: True for maximization, False for minimization
-        :type maximize: bool
         :param hmcr: ranges from 0.0 to 1.0
         :type hmcr: float
         """
         logging.basicConfig(filename="hs.log", filemode="a", format="%(message)s")
 
-        super().__init__(iterations, dimensions, boundaries, maximize)
+        super().__init__(iterations, dimensions, boundaries)
         self.hmcr = hmcr
 
     def evaluation(
@@ -44,7 +41,6 @@ class HS(EvolutionaryAlgorithm):
         evaluated_population = sorted(
             [(ind, fitness_function(ind)) for ind in population],
             key=lambda ind: ind[1],
-            reverse=self.maximize,
         )
 
         return evaluated_population
@@ -75,6 +71,6 @@ if __name__ == "__main__":
     np.random.seed(42)
     random.seed(42)
     boundaries = (-10, 10)
-    optimizer = HS(100000, 6, boundaries, False, hmcr=0.4)
+    optimizer = HS(100000, 6, boundaries, hmcr=0.4)
     population = optimizer.init_population(10)
     optimizer.optimize(population, zakharov_function)
