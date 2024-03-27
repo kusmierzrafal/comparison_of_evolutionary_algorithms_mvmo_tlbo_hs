@@ -17,7 +17,6 @@ def test_evaluation():
     boundaries = (-5.12, 5.12)
     optimizer = HS(10000, 6, boundaries, True, 0.9)
     population = optimizer.init_population(5)
-    child = optimizer.reproduction(population)
-    evaluated_population = optimizer.evaluation(population, rastrigins_function, child)
+    evaluated_population = optimizer.evaluation(population, rastrigins_function)
 
     assert len(evaluated_population) == len(population)

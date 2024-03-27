@@ -1,10 +1,11 @@
 import logging
 import random
+import bisect
 
 import numpy as np
 
 from evolutionary_algorithms.evolutionary_algorithm import EvolutionaryAlgorithm
-from optimization_functions.optimization_functions import rastrigins_function
+from optimization_functions.optimization_functions import zakharov_function
 
 
 class HS(EvolutionaryAlgorithm):
@@ -38,16 +39,15 @@ class HS(EvolutionaryAlgorithm):
         self,
         population: list[np.ndarray],
         fitness_function: callable,
-        child: np.ndarray,
     ):
-        population = population + [child]
 
-        best_population = sorted(
+        evaluated_population = sorted(
             [(ind, fitness_function(ind)) for ind in population],
             key=lambda ind: ind[1],
             reverse=self.maximize,
-        ).copy()[: len(population) - 1]
-        return best_population
+        )
+
+        return evaluated_population
 
     def reproduction(self, population: list[np.ndarray]) -> np.ndarray:
         child = np.empty(self.dimensions, dtype=float)
@@ -61,18 +61,20 @@ class HS(EvolutionaryAlgorithm):
 
     def optimize(self, population: list[np.ndarray], optimize_function: callable):
 
+        evaluated_population = self.evaluation(population, optimize_function)
         for i in range(self.iterations):
-
             child = self.reproduction(population)
-            evaluated_population = self.evaluation(population, optimize_function, child)
-
-            population = [ind[0] for ind in evaluated_population]
-
+            evaluated_child = (child, optimize_function(child))
+            bisect.insort(evaluated_population, evaluated_child, key=lambda ind: ind[1])
+            evaluated_population = evaluated_population[:-1]
         return evaluated_population[0]
 
 
 if __name__ == "__main__":
-    boundaries = (-5.12, 5.12)
-    optimizer = HS(10000, 6, boundaries, True, hmcr=0.9)
-    population = optimizer.init_population(100)
-    optimizer.optimize(population, rastrigins_function)
+
+    np.random.seed(42)
+    random.seed(42)
+    boundaries = (-10, 10)
+    optimizer = HS(100000, 6, boundaries, False, hmcr=0.4)
+    population = optimizer.init_population(10)
+    optimizer.optimize(population, zakharov_function)
