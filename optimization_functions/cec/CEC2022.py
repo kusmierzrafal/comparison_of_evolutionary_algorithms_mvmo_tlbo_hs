@@ -6,6 +6,8 @@ Created on Sat Jan  1 16:49:21 2022
 @email: abhishek.kumar.eee13@iitbhu.ac.in
 """
 import numpy as np
+import inspect
+import os
 
 INF = 1.0e99
 EPS = 1.0e-14
@@ -543,7 +545,7 @@ def cf_cal(x, nx, Os, delta, bias, fit, cf_num):
   return f
 
 
-def cec22_test_func(x, nx, mx, func_num):
+def cec22_test_func(x, nx, mx, func_num, input_path):
   global OShift, M, y, z, x_bound, ini_flag, n_flag, func_flag, SS
   
   OShift = None 
@@ -572,8 +574,8 @@ def cec22_test_func(x, nx, mx, func_num):
     z = [None]*nx
     x_bound = [100.0]*nx
 
-    if (nx!=2|nx!=10|nx!=20):
-      print("\nError: Test functions are only defined for D=2,10,20.\n")
+    # if (nx!=2|nx!=10|nx!=20):
+    #   print("\nError: Test functions are only defined for D=2,10,20.\n")
 
     if (nx==2)&(func_num==6 | func_num==7 | func_num==8):
       print("\nError:  NOT defined for D=2.\n")
@@ -581,7 +583,7 @@ def cec22_test_func(x, nx, mx, func_num):
     
     # Load M matrix
     
-    FileName = 'input_data/M_%d_D%d.txt'%(func_num, nx)
+    FileName = '%s/input_data/M_%d_D%d.txt'%(input_path, func_num, nx)
     try:
       M = np.loadtxt(FileName)
     except:
@@ -591,7 +593,7 @@ def cec22_test_func(x, nx, mx, func_num):
     del(FileName)
     
     # Shift data
-    FileName = "input_data/shift_data_%d.txt" %func_num
+    FileName = "%s/input_data/shift_data_%d.txt" %(input_path, func_num)
     try:
       OShift_temp = np.loadtxt(FileName)
     except:
@@ -614,7 +616,7 @@ def cec22_test_func(x, nx, mx, func_num):
     
     
     if (func_num >= 6) & (func_num <=8):
-        FileName = "input_data/shuffle_data_%d_D%d.txt" %(func_num, nx)
+        FileName = "%s/input_data/shuffle_data_%d_D%d.txt" %(input_path, func_num, nx)
         try:
           SS = np.loadtxt(FileName)
         except:
@@ -685,17 +687,16 @@ def cec22_test_func(x, nx, mx, func_num):
 class cec2022_func():
   
     def __init__(self, func_num):
-
+        self.input_path = os.path.dirname(inspect.getmodule(self).__file__)
         self.func = func_num
         
 
     def values(self, x):
-        
         nx, mx = np.shape(x)
         ObjFunc = np.zeros((mx,))
         for i in range(mx):
-            ObjFunc[i] = cec22_test_func(x[:,i], nx, 1, self.func)
+            ObjFunc[i] = cec22_test_func(x[:,i], nx, 1, self.func, self.input_path)
         self.ObjFunc = ObjFunc
         
         
-        return self
+        return self.ObjFunc

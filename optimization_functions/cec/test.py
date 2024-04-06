@@ -15,5 +15,5 @@ fx_n = 12   # function - 1, 2, 3, ..., 11, 12
 CEC = cec2022_func(func_num = fx_n)
 
 x = 200.0*np.random.rand(nx,mx)*0.0-100.0
-F = CEC.values(x)
-print(F.ObjFunc)
+result = CEC.values(x)
+print(result)
