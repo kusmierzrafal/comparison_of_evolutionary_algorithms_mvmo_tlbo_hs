@@ -1,4 +1,6 @@
+import copy
 import math
+import random
 
 import numpy as np
 
@@ -15,14 +17,21 @@ class Mutation:
     ):
 
         mutation_type_dict = {
-            "mapping_transformation": self.init_mapping_mutation(kwargs)
+            "mapping_transformation": self.init_mapping_mutation,
+            "mean_difference_vector": self.init_difference_vector_mutation,
         }
-        self.mutate = mutation_type_dict[mutation_type]
+        self.mutate = mutation_type_dict[mutation_type](kwargs)
 
-    def init_population_based_parameters(self, population: Population):
+    def mapping_population_based_parameters(self, population: Population):
         self.dimensions = population.get_dimensions()
+        self.pop_size = population.get_size()
         self.kd = 0.0505 / self.dimensions + 1.0
         self.last_no_zero_var_ind = np.ones(self.dimensions)
+
+    def difference_vector_population_based_parameters(self, population: Population):
+        self.boundaries = population.get_boundaries()
+        self.dimensions = population.get_dimensions()
+        self.pop_size = population.get_size()
 
     def init_mapping_mutation(self, kwargs):
 
@@ -31,7 +40,38 @@ class Mutation:
         self.asymmetry_factor_af = kwargs["asymmetry_factor_af"]
         self.val_shape_factor_sd = kwargs["val_shape_factor_sd"]
         self.current_mutation_position = 0
+        self.init_population_based_parameters = self.mapping_population_based_parameters
         return self.mapping_mutation
+
+    def init_difference_vector_mutation(self, kwargs):
+
+        self.teaching_factor = random.randint(1, 2)
+        self.init_population_based_parameters = (
+            self.difference_vector_population_based_parameters
+        )
+        return self.difference_vector_mutation
+
+    def difference_vector_mutation(
+        self, population: Population, optimize_function: callable
+    ):
+
+        mutated_population = copy.deepcopy(population)
+        mean_individual = mutated_population.get_mean_individual()
+        best_individual = mutated_population.get_best_individual()
+
+        random_factor = np.array([random.random() for _ in range(self.dimensions)])
+        mutagen = random_factor * (
+            best_individual - self.teaching_factor * mean_individual
+        )
+        mutagen_pop_size = np.vstack([mutagen] * self.pop_size)
+
+        mutated_population_transposed = mutated_population.population.T
+        mutated_population_transposed += mutagen_pop_size
+
+        mutated_population.ensure_boundaries()
+        mutated_population.evaluate(optimize_function)
+
+        population.get_better(mutated_population)
 
     def _last_no_zero_var_ind(self, new_var):
         self.last_no_zero_var_ind = np.asarray(
@@ -112,12 +152,11 @@ class Mutation:
         Strategy 2a used
         """
 
-        pop_size = population.get_size()
         population_transposed = population.population.T
 
-        mask = self.mutation_mask(pop_size)
+        mask = self.mutation_mask(self.pop_size)
         best_ind_pop_size, mapping_matrix = self.mapping_matrix(
-            population, population_transposed, mask, pop_size
+            population, population_transposed, mask, self.pop_size
         )
 
         mutated = self.mapping_mutate(mapping_matrix)

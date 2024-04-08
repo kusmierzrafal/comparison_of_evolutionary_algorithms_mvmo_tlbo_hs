@@ -167,3 +167,17 @@ class Population:
             self.sort_best()
             self.best_population = self.best_population[:, :n_best]
             self.best_evaluations = self.best_evaluations[:n_best]
+
+    def ensure_boundaries(self):
+        mask_lower = self.population < self.boundaries[0]
+        self.population[mask_lower] = self.boundaries[0]
+        mask_upper = self.population > self.boundaries[1]
+        self.population[mask_upper] = self.boundaries[1]
+
+    def get_better(self, other_population):
+        mask = self.evaluations < other_population.evaluations
+
+        self.population = np.where(mask, self.population, other_population.population)
+        self.evaluations = np.where(
+            mask, self.evaluations, other_population.evaluations
+        )
