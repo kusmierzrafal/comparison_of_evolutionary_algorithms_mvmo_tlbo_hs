@@ -1,6 +1,6 @@
 import copy
 from functools import partial
-from random import choice, random
+from random import choice, random, uniform
 
 import numpy as np
 
@@ -10,18 +10,16 @@ from evolutionary_algorithms.population import Population
 
 class Crossover:
 
-    def __init__(
-        self,
-        crossover_type,
-    ):
+    def __init__(self, crossover_type, **kwargs):
 
         crossover_type_dict = {
             "mapping_transformation": self.init_mapping_crossover,
             "mean_difference_vector": self.init_difference_vector_crossover,
+            "one_from_population": self.init_one_from_population_crossover,
         }
-        self.cross = crossover_type_dict[crossover_type]()
+        self.cross = crossover_type_dict[crossover_type](kwargs)
 
-    def init_difference_vector_crossover(self):
+    def init_difference_vector_crossover(self, kwargs):
         self.init_population_based_parameters = (
             self.difference_vector_population_based_parameters
         )
@@ -29,6 +27,10 @@ class Crossover:
 
     def difference_vector_population_based_parameters(self, population: Population):
         self.dimensions = population.get_dimensions()
+
+    def one_from_population_population_based_parameters(self, population: Population):
+        self.dimensions = population.get_dimensions()
+        self.boundaries = population.get_boundaries()
 
     def difference_vector_crossover(
         self, population: Population, optimize_function: callable
@@ -88,9 +90,17 @@ class Crossover:
     def _get_other_values_indexes(evaluations, val):
         return np.where(evaluations != val)[0]
 
-    def init_mapping_crossover(self):
+    def init_mapping_crossover(self, kwargs):
 
         return self.mapping_crossover
+
+    def init_one_from_population_crossover(self, kwargs):
+        self.init_population_based_parameters = (
+            self.one_from_population_population_based_parameters
+        )
+
+        self.pcr = kwargs["population_considering_rate"]
+        return self.one_from_population_crossover
 
     @staticmethod
     def mapping_crossover(population: Population, mask):
@@ -101,3 +111,13 @@ class Crossover:
         pop_size = population.get_size()
         best_ind_pop_size = vstack(population.get_best_archive_individual, pop_size)
         population_transposed[mask] = best_ind_pop_size[mask]
+
+    def one_from_population_crossover(self, population: Population):
+        transposed_population = population.population.T
+        child = np.empty((self.dimensions, 1), dtype=float)
+        for ind in range(self.dimensions):
+            if random() > self.pcr:
+                child[ind] = uniform(self.boundaries[0], self.boundaries[1])
+            else:
+                child[ind] = choice(transposed_population)[ind]
+        return child

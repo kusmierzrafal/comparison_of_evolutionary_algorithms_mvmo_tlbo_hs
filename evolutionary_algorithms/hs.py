@@ -1,20 +1,14 @@
 import logging
-import random
-import bisect
 
-import numpy as np
-
+from evolutionary_algorithms.crossover import Crossover
 from evolutionary_algorithms.evolutionary_algorithm import EvolutionaryAlgorithm
-from optimization_functions.optimization_functions import zakharov_function
+from evolutionary_algorithms.population import Population
 
 
 class HS(EvolutionaryAlgorithm):
     def __init__(
         self,
-        iterations: int,
-        dimensions: int,
-        boundaries: tuple[float, float],
-        hmcr: float,
+        pcr: float,
     ):
         """
         Harmony Search Algorithm
@@ -24,53 +18,39 @@ class HS(EvolutionaryAlgorithm):
         :type dimensions: int
         :param boundaries: lower and higher limit of the range of every gene
         :type boundaries: tuple of floats
-        :param hmcr: ranges from 0.0 to 1.0
-        :type hmcr: float
+        :param pcr: ranges from 0.0 to 1.0
+        :type pcr: float
         """
         logging.basicConfig(filename="hs.log", filemode="a", format="%(message)s")
 
-        super().__init__(iterations, dimensions, boundaries)
-        self.hmcr = hmcr
-
-    def evaluation(
-        self,
-        population: list[np.ndarray],
-        fitness_function: callable,
-    ):
-
-        evaluated_population = sorted(
-            [(ind, fitness_function(ind)) for ind in population],
-            key=lambda ind: ind[1],
+        super().__init__()
+        self.pcr = pcr
+        self.crossover = Crossover(
+            "one_from_population",
+            population_considering_rate=self.pcr,
         )
 
-        return evaluated_population
+    def optimize(
+        self,
+        population: Population,
+        iterations: int,
+        optimize_function: callable,
+        opt_val,
+    ):
+        self.crossover.init_population_based_parameters(population)
+        super().init_population_based_parameters(population, iterations)
 
-    def reproduction(self, population: list[np.ndarray]) -> np.ndarray:
-        child = np.empty(self.dimensions, dtype=float)
-        for ind in range(self.dimensions):
-            if random.random() > self.hmcr:
-                child[ind] = random.uniform(self.boundaries[0], self.boundaries[1])
-            else:
-                child[ind] = random.choice(population)[ind]
+        population.evaluate(optimize_function)
+        population.sort()
 
-        return child
+        for iteration in range(iterations):
+            child = self.crossover.cross(population)
+            child_val = optimize_function(child)
+            population.update_population(child, child_val)
 
-    def optimize(self, population: list[np.ndarray], optimize_function: callable):
+            best_val = population.get_best_value()
 
-        evaluated_population = self.evaluation(population, optimize_function)
-        for i in range(self.iterations):
-            child = self.reproduction(population)
-            evaluated_child = (child, optimize_function(child))
-            bisect.insort(evaluated_population, evaluated_child, key=lambda ind: ind[1])
-            evaluated_population = evaluated_population[:-1]
-        return evaluated_population[0]
-
-
-if __name__ == "__main__":
-
-    np.random.seed(42)
-    random.seed(42)
-    boundaries = (-10, 10)
-    optimizer = HS(100000, 6, boundaries, hmcr=0.4)
-    population = optimizer.init_population(10)
-    optimizer.optimize(population, zakharov_function)
+            print(best_val)
+            if super().termination_criterion(best_val, opt_val, iteration):
+                return best_val
+        return best_val

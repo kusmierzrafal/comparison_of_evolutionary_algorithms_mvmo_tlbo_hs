@@ -1,22 +1,44 @@
-from evolutionary_algorithms.hs import HS
+import random
+
+import numpy as np
+from optimization_functions.cec.CEC2022 import cec2022_func
 from optimization_functions.optimization_functions import zakharov_function
 
+from evolutionary_algorithms.hs import HS
+from evolutionary_algorithms.population import Population
 
-def test_reproduction():
-    dimensions = 6
+
+def test_general_hs():
+    zakharov_opt_val = 0
+    pop_size = 30
+    iterations = int(200000)
+    seed = 42
+    np.random.seed(seed)
+    random.seed(seed)
+    dimensions = 10
     boundaries = (-5.12, 5.12)
-    optimizer = HS(10000, dimensions, boundaries, 0.9)
+    population = Population(dimensions, pop_size, boundaries)
+    optimizer = HS(pcr=0.9)
+    best_val = optimizer.optimize(
+        population, iterations, zakharov_function, zakharov_opt_val
+    )
+    assert best_val == 7.061152693630814e-06
 
-    population = optimizer.init_population(5)
-    child = optimizer.reproduction(population)
-    assert len(child) == dimensions
-    assert all(boundaries[0] <= gene <= boundaries[1] for gene in child)
+
+def general_hs_cec():
+    zakharov_cec_function = cec2022_func(func_num=1).values
+    zakharov_opt_val = 300
+    pop_size = 30
+    iterations = int(200000)
+    seed = 42
+    np.random.seed(seed)
+    random.seed(seed)
+    dimensions = 10
+    boundaries = (-100, 100)
+    optimizer = HS(pcr=0.9)
+    population = Population(dimensions, pop_size, boundaries)
+    optimizer.optimize(population, iterations, zakharov_cec_function, zakharov_opt_val)
 
 
-def test_evaluation():
-    boundaries = (-5.12, 5.12)
-    optimizer = HS(10000, 6, boundaries, 0.9)
-    population = optimizer.init_population(5)
-    evaluated_population = optimizer.evaluation(population, zakharov_function)
-
-    assert len(evaluated_population) == len(population)
+if __name__ == "__main__":
+    general_hs_cec()
