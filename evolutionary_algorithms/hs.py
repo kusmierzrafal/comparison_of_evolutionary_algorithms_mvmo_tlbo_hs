@@ -1,20 +1,17 @@
 import logging
-import random
 
-import numpy as np
-
+from evolutionary_algorithms.crossover import Crossover
 from evolutionary_algorithms.evolutionary_algorithm import EvolutionaryAlgorithm
-from optimization_functions.optimization_functions import rastrigins_function
+from evolutionary_algorithms.mutation import Mutation
+from evolutionary_algorithms.population import Population
 
 
 class HS(EvolutionaryAlgorithm):
     def __init__(
         self,
-        iterations: int,
-        dimensions: int,
-        boundaries: tuple[float, float],
-        maximize: bool,
-        hmcr: float,
+        pcr: float,
+        mutation_size: float = 0.25,
+        mutation_factor: float = 0.2,
     ):
         """
         Harmony Search Algorithm
@@ -24,55 +21,48 @@ class HS(EvolutionaryAlgorithm):
         :type dimensions: int
         :param boundaries: lower and higher limit of the range of every gene
         :type boundaries: tuple of floats
-        :param maximize: True for maximization, False for minimization
-        :type maximize: bool
-        :param hmcr: ranges from 0.0 to 1.0
-        :type hmcr: float
+        :param pcr: ranges from 0.0 to 1.0
+        :type pcr: float
         """
         logging.basicConfig(filename="hs.log", filemode="a", format="%(message)s")
 
-        super().__init__(iterations, dimensions, boundaries, maximize)
-        self.hmcr = hmcr
+        super().__init__()
+        self.pcr = pcr
+        self.mutation_factor = mutation_factor
+        self.mutation_size = mutation_size
+        self.crossover = Crossover(
+            "one_from_population",
+            population_considering_rate=self.pcr,
+        )
+        self.mutation = Mutation(
+            "one_from_population",
+            mutation_factor=self.mutation_factor,
+            mutation_size=self.mutation_size,
+        )
 
-    def evaluation(
+    def optimize(
         self,
-        population: list[np.ndarray],
-        fitness_function: callable,
-        child: np.ndarray,
+        population: Population,
+        iterations: int,
+        optimize_function: callable,
+        opt_val,
     ):
-        population = population + [child]
+        self.crossover.init_population_based_parameters(population)
+        self.mutation.init_population_based_parameters(population)
+        super().init_population_based_parameters(population, iterations)
 
-        best_population = sorted(
-            [(ind, fitness_function(ind)) for ind in population],
-            key=lambda ind: ind[1],
-            reverse=self.maximize,
-        ).copy()[: len(population) - 1]
-        return best_population
+        population.evaluate(optimize_function)
+        population.sort()
 
-    def reproduction(self, population: list[np.ndarray]) -> np.ndarray:
-        child = np.empty(self.dimensions, dtype=float)
-        for ind in range(self.dimensions):
-            if random.random() > self.hmcr:
-                child[ind] = random.uniform(self.boundaries[0], self.boundaries[1])
-            else:
-                child[ind] = random.choice(population)[ind]
+        for iteration in range(iterations):
+            child = self.crossover.cross(population)
+            child = self.mutation.mutate(child)
+            child_val = optimize_function(child)
+            population.update_population(child, child_val)
 
-        return child
+            best_val = population.get_best_value()
 
-    def optimize(self, population: list[np.ndarray], optimize_function: callable):
-
-        for i in range(self.iterations):
-
-            child = self.reproduction(population)
-            evaluated_population = self.evaluation(population, optimize_function, child)
-
-            population = [ind[0] for ind in evaluated_population]
-
-        return evaluated_population[0]
-
-
-if __name__ == "__main__":
-    boundaries = (-5.12, 5.12)
-    optimizer = HS(10000, 6, boundaries, True, hmcr=0.9)
-    population = optimizer.init_population(100)
-    optimizer.optimize(population, rastrigins_function)
+            print(best_val)
+            if super().termination_criterion(best_val, opt_val, iteration):
+                return best_val
+        return best_val

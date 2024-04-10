@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 
-def rastrigins_function(vec: np.ndarray) -> float:
+def rastrigins_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, includes numbers from [-5,12, 5,12]
     :return: value of function
@@ -11,7 +11,7 @@ def rastrigins_function(vec: np.ndarray) -> float:
     return sum([x**2 - 10 * np.cos(2 * math.pi * x) + 10 for x in vec])
 
 
-def zakharov_function(vec: np.ndarray) -> float:
+def zakharov_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-5, 10]
     :type vec: numpy.ndarray
@@ -25,7 +25,7 @@ def zakharov_function(vec: np.ndarray) -> float:
     )
 
 
-def rosenbrock_function(vec: np.ndarray) -> float:
+def rosenbrock_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-5, 10]
     :type vec: numpy.ndarray
@@ -37,7 +37,7 @@ def rosenbrock_function(vec: np.ndarray) -> float:
     )
 
 
-def expanded_schaffers_function(vec: np.ndarray) -> float:
+def expanded_schaffers_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-100, 100]
     :type vec: numpy.ndarray
@@ -45,7 +45,7 @@ def expanded_schaffers_function(vec: np.ndarray) -> float:
     :rtype: float
     """
 
-    def schaffers_function(x: float, y: float) -> float:
+    def schaffers_function(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         return (
             0.5 + (np.sin((x**2 + y**2)) ** 2 - 0.5) / (1 + 0.001 * (x**2 + y**2)) ** 2
         )
@@ -58,7 +58,7 @@ def expanded_schaffers_function(vec: np.ndarray) -> float:
     )
 
 
-def bent_cigar_function(vec: np.ndarray) -> float:
+def bent_cigar_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-100, 100]
     :type vec: numpy.ndarray
@@ -68,16 +68,13 @@ def bent_cigar_function(vec: np.ndarray) -> float:
     return vec[0] ** 2 + 10**6 * sum(x**2 for x in vec[1:])
 
 
-def levy_function(vec: np.ndarray) -> float:
+def levy_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-10, 10]
     :type vec: numpy.ndarray
     :return: value of function
     :rtype: float
     """
-    # casting added for other implementation of mvmo comparison
-    vec = np.asarray(vec)
-
     vec_w = 1 + (vec - 1) / 4
     return (
         np.sin(math.pi * vec_w[0]) ** 2
@@ -91,7 +88,7 @@ def levy_function(vec: np.ndarray) -> float:
     )
 
 
-def high_conditioned_elliptic_function(vec: np.ndarray) -> float:
+def high_conditioned_elliptic_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-100, 100]
     :type vec: numpy.ndarray
@@ -102,7 +99,7 @@ def high_conditioned_elliptic_function(vec: np.ndarray) -> float:
     return sum([(10**6) ** (i / (d - 1)) * vec[i] ** 2 for i in range(d)])
 
 
-def happycat_function(vec: np.ndarray) -> float:
+def happycat_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-20, 20]
     :type vec: numpy.ndarray
@@ -117,7 +114,7 @@ def happycat_function(vec: np.ndarray) -> float:
     )
 
 
-def discus_function(vec: np.ndarray) -> float:
+def discus_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-100, 100]
     :type vec: numpy.ndarray
@@ -127,7 +124,7 @@ def discus_function(vec: np.ndarray) -> float:
     return 10**6 * vec[0] ** 2 + sum([x**2 for x in vec[1:]])
 
 
-def ackleys_function(vec: np.ndarray) -> float:
+def ackleys_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-32.768, 32.768]
     :type vec: numpy.ndarray
@@ -143,7 +140,7 @@ def ackleys_function(vec: np.ndarray) -> float:
     )
 
 
-def schaffers_f7_function(vec: np.ndarray) -> float:
+def schaffers_f7_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-100, 100]
     :type vec: numpy.ndarray
@@ -165,7 +162,7 @@ def schaffers_f7_function(vec: np.ndarray) -> float:
     ) ** 2
 
 
-def hgbat_function(vec: np.ndarray) -> float:
+def hgbat_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-15, 15]
     :type vec: numpy.ndarray
@@ -180,7 +177,7 @@ def hgbat_function(vec: np.ndarray) -> float:
     )
 
 
-def griewanks_function(vec: np.ndarray) -> float:
+def griewanks_function(vec: np.ndarray) -> np.ndarray:
     """
     :param vec: real numbers vector, usually includes numbers from [-100, 100]
     :type vec: numpy.ndarray
