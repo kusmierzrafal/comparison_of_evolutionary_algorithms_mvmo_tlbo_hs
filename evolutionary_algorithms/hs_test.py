@@ -18,11 +18,12 @@ def test_general_hs():
     dimensions = 10
     boundaries = (-5.12, 5.12)
     population = Population(dimensions, pop_size, boundaries)
-    optimizer = HS(pcr=0.9)
+    optimizer = HS(0.9, 0.25, 0.2)
     best_val = optimizer.optimize(
         population, iterations, zakharov_function, zakharov_opt_val
     )
-    assert best_val == 7.061152693630814e-06
+
+    assert best_val == 9.44008934522682e-06
 
 
 def general_hs_cec():
@@ -35,7 +36,7 @@ def general_hs_cec():
     random.seed(seed)
     dimensions = 10
     boundaries = (-100, 100)
-    optimizer = HS(pcr=0.9)
+    optimizer = HS(0.9, 0.25, 0.2)
     population = Population(dimensions, pop_size, boundaries)
     optimizer.optimize(population, iterations, zakharov_cec_function, zakharov_opt_val)
 

@@ -19,6 +19,7 @@ class Mutation:
         mutation_type_dict = {
             "mapping_transformation": self.init_mapping_mutation,
             "mean_difference_vector": self.init_difference_vector_mutation,
+            "one_from_population": self.init_one_from_population_mutation,
         }
         self.mutate = mutation_type_dict[mutation_type](kwargs)
 
@@ -27,6 +28,10 @@ class Mutation:
         self.pop_size = population.get_size()
         self.kd = 0.0505 / self.dimensions + 1.0
         self.last_no_zero_var_ind = np.ones(self.dimensions)
+
+    def one_from_population_population_based_parameters(self, population: Population):
+        self.dimensions = population.get_dimensions()
+        self.boundaries = population.get_boundaries()
 
     def difference_vector_population_based_parameters(self, population: Population):
         self.boundaries = population.get_boundaries()
@@ -42,6 +47,14 @@ class Mutation:
         self.current_mutation_position = 0
         self.init_population_based_parameters = self.mapping_population_based_parameters
         return self.mapping_mutation
+
+    def init_one_from_population_mutation(self, kwargs):
+        self.mutation_factor = kwargs["mutation_factor"]
+        self.mutation_size = kwargs["mutation_size"]
+        self.init_population_based_parameters = (
+            self.one_from_population_population_based_parameters
+        )
+        return self.one_from_population_mutation
 
     def init_difference_vector_mutation(self, kwargs):
 
@@ -201,3 +214,21 @@ class Mutation:
             + (1 - transform(1) + transform(0)) * random_gene
             - transform(0)
         )
+
+    def one_from_population_mutation(self, child: np.ndarray):
+
+        for ind in range(self.dimensions):
+            if random.random() < self.mutation_factor:
+                if random.random() < 0.5:
+                    child[ind] -= (
+                        (child[ind] - self.boundaries[0])
+                        * random.random()
+                        * self.mutation_size
+                    )
+                else:
+                    child[ind] += (
+                        (self.boundaries[1] - child[ind])
+                        * random.random()
+                        * self.mutation_size
+                    )
+        return child

@@ -2,6 +2,7 @@ import logging
 
 from evolutionary_algorithms.crossover import Crossover
 from evolutionary_algorithms.evolutionary_algorithm import EvolutionaryAlgorithm
+from evolutionary_algorithms.mutation import Mutation
 from evolutionary_algorithms.population import Population
 
 
@@ -9,6 +10,8 @@ class HS(EvolutionaryAlgorithm):
     def __init__(
         self,
         pcr: float,
+        mutation_size: float = 0.25,
+        mutation_factor: float = 0.2,
     ):
         """
         Harmony Search Algorithm
@@ -25,9 +28,16 @@ class HS(EvolutionaryAlgorithm):
 
         super().__init__()
         self.pcr = pcr
+        self.mutation_factor = mutation_factor
+        self.mutation_size = mutation_size
         self.crossover = Crossover(
             "one_from_population",
             population_considering_rate=self.pcr,
+        )
+        self.mutation = Mutation(
+            "one_from_population",
+            mutation_factor=self.mutation_factor,
+            mutation_size=self.mutation_size,
         )
 
     def optimize(
@@ -38,6 +48,7 @@ class HS(EvolutionaryAlgorithm):
         opt_val,
     ):
         self.crossover.init_population_based_parameters(population)
+        self.mutation.init_population_based_parameters(population)
         super().init_population_based_parameters(population, iterations)
 
         population.evaluate(optimize_function)
@@ -45,6 +56,7 @@ class HS(EvolutionaryAlgorithm):
 
         for iteration in range(iterations):
             child = self.crossover.cross(population)
+            child = self.mutation.mutate(child)
             child_val = optimize_function(child)
             population.update_population(child, child_val)
 
