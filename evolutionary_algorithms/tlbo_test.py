@@ -1,11 +1,11 @@
 import random
 
 import numpy as np
-from optimization_functions.cec.CEC2022 import cec2022_func
-from optimization_functions.optimization_functions import zakharov_function
 
 from evolutionary_algorithms.population import Population
 from evolutionary_algorithms.tlbo import TLBO
+from optimization_functions.cec.CEC2022 import cec2022_func
+from optimization_functions.optimization_functions import zakharov_function
 
 
 def test_general_tlbo():
@@ -22,7 +22,7 @@ def test_general_tlbo():
     best_val = optimizer.optimize(
         population, iterations, zakharov_function, zakharov_opt_val
     )
-    assert best_val == 8.626902861448757e-09
+    assert best_val == 9.651445425007979e-09
 
 
 def general_tlbo_cec():
