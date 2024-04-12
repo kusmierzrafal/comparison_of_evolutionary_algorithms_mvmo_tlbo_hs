@@ -72,7 +72,6 @@ class Crossover:
         population.get_better(crossed_population)
 
         population.evaluate(optimize_function)
-        population.sort()
 
     def get_other_values_indexes(self, population: Population):
 

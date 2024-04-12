@@ -1,5 +1,4 @@
 import logging
-from random import randint, seed
 
 import numpy as np
 
@@ -21,8 +20,6 @@ class TLBO(EvolutionaryAlgorithm):
         :param boundaries: lower and higher limit of the range of every gene
         :type boundaries: tuple of floats
         """
-        self.teaching_factor = randint(1, 2)
-        seed(42)
         self.mutation = Mutation(
             "mean_difference_vector",
         )
@@ -55,7 +52,6 @@ class TLBO(EvolutionaryAlgorithm):
         super().init_population_based_parameters(population, iterations)
 
         population.evaluate(optimize_function)
-        population.sort()
 
         for iteration in range(iterations):
 
@@ -64,7 +60,6 @@ class TLBO(EvolutionaryAlgorithm):
 
             best_val = population.get_best_value()
 
-            print(best_val)
             if super().termination_criterion(best_val, opt_val, iteration):
                 return best_val
         return best_val

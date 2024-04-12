@@ -99,13 +99,14 @@ class Population:
 
     def get_best_individual(self):
         """
-        Must be sorted before
         :return: best individual
         """
-        return np.copy(self.population[:, 0])
+        best_ind = np.argmin(self.evaluations)
+        return np.copy(self.population[:, best_ind])
 
     def get_best_value(self):
-        return self.evaluations[0]
+        best_ind = np.argmin(self.evaluations)
+        return self.evaluations[best_ind]
 
     def get_mean_archive_individual(self):
         return np.mean(self.population, axis=1)
