@@ -2,9 +2,9 @@ import logging
 
 import numpy as np
 
-from evolutionary_algorithms.crossover import Crossover
-from evolutionary_algorithms.evolutionary_algorithm import EvolutionaryAlgorithm
-from evolutionary_algorithms.mutation import Mutation
+from evolutionary_algorithms.evolutionary.crossover import Crossover
+from evolutionary_algorithms.evolutionary.evolutionary_algorithm import EvolutionaryAlgorithm
+from evolutionary_algorithms.evolutionary.mutation import Mutation
 
 
 class TLBO(EvolutionaryAlgorithm):

@@ -5,7 +5,7 @@ from optimization_functions.cec.CEC2022 import cec2022_func
 from optimization_functions.optimization_functions import zakharov_function
 
 from evolutionary_algorithms.mvmo import MVMO
-from evolutionary_algorithms.population import Population
+from evolutionary_algorithms.evolutionary.population import Population
 
 
 def test_general_mvmo():

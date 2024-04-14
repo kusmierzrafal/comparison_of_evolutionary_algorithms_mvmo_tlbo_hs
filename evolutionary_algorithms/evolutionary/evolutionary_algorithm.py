@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-from evolutionary_algorithms.population import Population
+from evolutionary_algorithms.evolutionary.population import Population
 
 
 class EvolutionaryAlgorithm(ABC):
