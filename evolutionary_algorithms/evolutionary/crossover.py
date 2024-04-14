@@ -4,8 +4,8 @@ from random import choice, randint, random, uniform
 
 import numpy as np
 
-from evolutionary_algorithms.helpers import vstack
-from evolutionary_algorithms.population import Population
+from evolutionary_algorithms.evolutionary.helpers import vstack
+from evolutionary_algorithms.evolutionary.population import Population
 
 
 class Crossover:

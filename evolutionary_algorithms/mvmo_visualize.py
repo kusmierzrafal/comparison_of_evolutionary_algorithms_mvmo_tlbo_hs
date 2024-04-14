@@ -1,7 +1,7 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-from evolutionary_algorithms.mutation import Mutation
+from evolutionary_algorithms.evolutionary.mutation import Mutation
 
 mpl.use("TkAgg")
 x = [num / 100 for num in range(101)]
