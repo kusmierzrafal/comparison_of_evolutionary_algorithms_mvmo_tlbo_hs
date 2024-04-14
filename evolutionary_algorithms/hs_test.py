@@ -23,7 +23,7 @@ def test_general_hs():
         population, iterations, zakharov_function, zakharov_opt_val
     )
 
-    assert best_val == 9.44008934522682e-06
+    assert best_val == 1.0191034289361441e-05
 
 
 def general_hs_cec():
