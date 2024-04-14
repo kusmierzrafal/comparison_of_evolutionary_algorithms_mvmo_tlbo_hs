@@ -45,7 +45,6 @@ class HS(EvolutionaryAlgorithm):
         population: Population,
         iterations: int,
         optimize_function: callable,
-        opt_val,
     ):
         self.crossover.init_population_based_parameters(population)
         self.mutation.init_population_based_parameters(population)
@@ -59,9 +58,5 @@ class HS(EvolutionaryAlgorithm):
             child_val = optimize_function(child)
             population.update_population(child, child_val)
 
-            best_val = population.get_best_value()
-
-            print(best_val)
-            if super().termination_criterion(best_val, opt_val, iteration):
-                return best_val
+        best_val = population.get_best_value()
         return best_val

@@ -36,9 +36,7 @@ terminating = Event()
 # namedtuples are lightweight and trivial to extend should more results be desired in the future. Right now, we're just
 # keeping track of the total elapsed clock time, the best harmony found, the fitness for that harmony, and the harmony memory,
 # which allows you to see the top harmonies.
-HarmonySearchResults = namedtuple('HarmonySearchResults',
-                                  ['elapsed_time', 'best_harmony', 'best_fitness', 'harmony_memories',
-                                   'harmony_histories'])
+HarmonySearchResults = namedtuple('HarmonySearchResults', ['elapsed_time', 'best_harmony', 'best_fitness', 'harmony_memories', 'harmony_histories'])
 
 
 def harmony_search(objective_function, num_processes, num_iterations, initial_harmonies=None):
@@ -50,8 +48,7 @@ def harmony_search(objective_function, num_processes, num_iterations, initial_ha
     pool = Pool(num_processes)
     try:
         start = datetime.now()
-        pool_results = [pool.apply_async(worker, args=(objective_function, initial_harmonies,)) for i in
-                        range(num_iterations)]
+        pool_results = [pool.apply_async(worker, args=(objective_function, initial_harmonies,)) for i in range(num_iterations)]
         pool.close()  # no more tasks will be submitted to the pool
         pool.join()  # wait for all tasks to finish before moving on
         end = datetime.now()
@@ -64,14 +61,13 @@ def harmony_search(objective_function, num_processes, num_iterations, initial_ha
         harmony_histories = list()
         for result in pool_results:
             harmony, fitness, harmony_memory, harmony_history = result.get()  # multiprocessing.pool.AsyncResult is returned for each process, so we need to call get() to pull out the value
-            if (objective_function.maximize() and fitness > best_fitness) or (
-                    not objective_function.maximize() and fitness < best_fitness):
+            if (objective_function.maximize() and fitness > best_fitness) or (not objective_function.maximize() and fitness < best_fitness):
                 best_harmony = harmony
                 best_fitness = fitness
             harmony_memories.append(harmony_memory)
             harmony_histories.append(harmony_history)
 
-        return HarmonySearchResults(elapsed_time=elapsed_time, best_harmony=best_harmony, best_fitness=best_fitness, \
+        return HarmonySearchResults(elapsed_time=elapsed_time, best_harmony=best_harmony, best_fitness=best_fitness,\
                                     harmony_memories=harmony_memories, harmony_histories=harmony_histories)
     except KeyboardInterrupt:
         pool.terminate()
@@ -95,14 +91,13 @@ def harmony_search_serial(objective_function, num_iterations, initial_harmonies=
     harmony_histories = list()
     for result in results:
         harmony, fitness, harmony_memory, harmony_history = result
-        if (objective_function.maximize() and fitness > best_fitness) or (
-                not objective_function.maximize() and fitness < best_fitness):
+        if (objective_function.maximize() and fitness > best_fitness) or (not objective_function.maximize() and fitness < best_fitness):
             best_harmony = harmony
             best_fitness = fitness
         harmony_memories.append(harmony_memory)
         harmony_histories.append(harmony_history)
 
-    return HarmonySearchResults(elapsed_time=elapsed_time, best_harmony=best_harmony, best_fitness=best_fitness, \
+    return HarmonySearchResults(elapsed_time=elapsed_time, best_harmony=best_harmony, best_fitness=best_fitness,\
                                 harmony_memories=harmony_memories, harmony_histories=harmony_histories)
 
 
@@ -121,6 +116,7 @@ def worker(objective_function, initial_harmonies=None):
 
 
 class HarmonySearch(object):
+
     """
         This class implements the harmony search (HS) global optimization algorithm. In general, what you'll do is this:
 
@@ -156,16 +152,19 @@ class HarmonySearch(object):
         # create max_imp improvisations
         generation = 0
         num_imp = 0
-        while (num_imp < self._obj_fun.get_max_imp()):
+        while(num_imp < self._obj_fun.get_max_imp()):
             # generate new harmony
             harmony = list()
             for i in range(0, self._obj_fun.get_num_parameters()):
                 if random.random() < self._obj_fun.get_hmcr():
                     self._memory_consideration(harmony, i)
-                    if random.random() < self._obj_fun.get_par():
-                        self._pitch_adjustment(harmony, i)
                 else:
                     self._random_selection(harmony, i)
+
+            for i in range(0, self._obj_fun.get_num_parameters()):
+                if random.random() < self._obj_fun.get_par():
+                    self._pitch_adjustment(harmony, i)
+
             fitness = self._obj_fun.get_fitness(harmony)
             self._update_harmony_memory(harmony, fitness)
             num_imp += 1
@@ -180,8 +179,7 @@ class HarmonySearch(object):
         best_harmony = None
         best_fitness = float('-inf') if self._obj_fun.maximize() else float('+inf')
         for harmony, fitness in self._harmony_memory:
-            if (self._obj_fun.maximize() and fitness > best_fitness) or (
-                    not self._obj_fun.maximize() and fitness < best_fitness):
+            if (self._obj_fun.maximize() and fitness > best_fitness) or (not self._obj_fun.maximize() and fitness < best_fitness):
                 best_harmony = harmony
                 best_fitness = fitness
         return best_harmony, best_fitness, self._harmony_memory, self._harmony_history
@@ -201,7 +199,7 @@ class HarmonySearch(object):
 
             if len(initial_harmonies) != self._obj_fun.get_hms():
                 raise ValueError('Number of initial harmonies does not equal to the harmony memory size.')
-
+            
             num_parameters = self._obj_fun.get_num_parameters()
             for i in range(len(initial_harmonies)):
                 num_parameters_initial_harmonies = len(initial_harmonies[i])
@@ -249,31 +247,24 @@ class HarmonySearch(object):
             This means that the maximum value the pitch can be dropped will be 25% of the difference between the lower bound and the current
             pitch. mpai functions similarly, only it relies on indices of the possible values instead.
         """
-        if (self._obj_fun.is_variable(i)):
+        if(self._obj_fun.is_variable(i)):
             if self._obj_fun.is_discrete(i):
                 current_index = self._obj_fun.get_index(i, harmony[i])
                 # discrete variable
                 if random.random() < 0.5:
                     # adjust pitch down
-                    harmony[i] = self._obj_fun.get_value(i, current_index - random.randint(0,
-                                                                                           min(self._obj_fun.get_mpai(),
-                                                                                               current_index)))
+                    harmony[i] = self._obj_fun.get_value(i, current_index - random.randint(0, min(self._obj_fun.get_mpai(), current_index)))
                 else:
                     # adjust pitch up
-                    harmony[i] = self._obj_fun.get_value(i, current_index + random.randint(0,
-                                                                                           min(self._obj_fun.get_mpai(),
-                                                                                               self._obj_fun.get_num_discrete_values(
-                                                                                                   i) - current_index - 1)))
+                    harmony[i] = self._obj_fun.get_value(i, current_index + random.randint(0, min(self._obj_fun.get_mpai(), self._obj_fun.get_num_discrete_values(i) - current_index - 1)))
             else:
                 # continuous variable
                 if random.random() < 0.5:
                     # adjust pitch down
-                    harmony[i] -= (harmony[i] - self._obj_fun.get_lower_bound(
-                        i)) * random.random() * self._obj_fun.get_mpap()
+                    harmony[i] -= (harmony[i] - self._obj_fun.get_lower_bound(i)) * random.random() * self._obj_fun.get_mpap()
                 else:
                     # adjust pitch up
-                    harmony[i] += (self._obj_fun.get_upper_bound(i) - harmony[
-                        i]) * random.random() * self._obj_fun.get_mpap()
+                    harmony[i] += (self._obj_fun.get_upper_bound(i) - harmony[i]) * random.random() * self._obj_fun.get_mpap()
 
     def _update_harmony_memory(self, considered_harmony, considered_fitness):
         """
@@ -284,10 +275,8 @@ class HarmonySearch(object):
             worst_index = None
             worst_fitness = float('+inf') if self._obj_fun.maximize() else float('-inf')
             for i, (harmony, fitness) in enumerate(self._harmony_memory):
-                if (self._obj_fun.maximize() and fitness < worst_fitness) or (
-                        not self._obj_fun.maximize() and fitness > worst_fitness):
+                if (self._obj_fun.maximize() and fitness < worst_fitness) or (not self._obj_fun.maximize() and fitness > worst_fitness):
                     worst_index = i
                     worst_fitness = fitness
-            if (self._obj_fun.maximize() and considered_fitness > worst_fitness) or (
-                    not self._obj_fun.maximize() and considered_fitness < worst_fitness):
+            if (self._obj_fun.maximize() and considered_fitness > worst_fitness) or (not self._obj_fun.maximize() and considered_fitness < worst_fitness):
                 self._harmony_memory[worst_index] = (considered_harmony, considered_fitness)
