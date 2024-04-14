@@ -52,7 +52,6 @@ class HS(EvolutionaryAlgorithm):
         super().init_population_based_parameters(population, iterations)
 
         population.evaluate(optimize_function)
-        population.sort()
 
         for iteration in range(iterations):
             child = self.crossover.cross(population)

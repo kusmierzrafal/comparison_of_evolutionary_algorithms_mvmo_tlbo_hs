@@ -1,6 +1,6 @@
 import copy
 from functools import partial
-from random import choice, random, uniform
+from random import choice, randint, random, uniform
 
 import numpy as np
 
@@ -31,6 +31,7 @@ class Crossover:
     def one_from_population_population_based_parameters(self, population: Population):
         self.dimensions = population.get_dimensions()
         self.boundaries = population.get_boundaries()
+        self.size = population.get_size()
 
     def difference_vector_crossover(
         self, population: Population, optimize_function: callable
@@ -115,8 +116,9 @@ class Crossover:
         transposed_population = population.population.T
         child = np.empty((self.dimensions, 1), dtype=float)
         for ind in range(self.dimensions):
-            if random() > self.pcr:
-                child[ind] = uniform(self.boundaries[0], self.boundaries[1])
+            if random() < self.pcr:
+                ind_index = randint(0, self.size - 1)
+                child[ind] = transposed_population[ind_index][ind]
             else:
-                child[ind] = choice(transposed_population)[ind]
+                child[ind] = uniform(self.boundaries[0], self.boundaries[1])
         return child
