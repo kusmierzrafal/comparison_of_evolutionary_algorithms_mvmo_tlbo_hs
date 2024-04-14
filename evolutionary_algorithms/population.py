@@ -155,14 +155,11 @@ class Population:
                 break
 
     def update_population(self, child: np.ndarray, child_val: float):
-        child = child.flatten()
-        insertion_index = bisect.bisect(self.evaluations, child_val)
-        self.evaluations = np.insert(self.evaluations, insertion_index, child_val)[
-            : self.size
-        ]
-        self.population = np.insert(self.population, insertion_index, child, axis=1)[
-            :, : self.size
-        ]
+        worst_ind = np.argmax(self.evaluations)
+
+        if self.evaluations[worst_ind] > child_val:
+            self.evaluations[worst_ind] = child_val
+            self.population.T[worst_ind] = child.flatten()
 
     def init_best_population(self, cur_best_size, n_best):
         if cur_best_size == 0:
