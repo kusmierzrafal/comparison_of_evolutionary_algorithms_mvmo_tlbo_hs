@@ -4,7 +4,6 @@ import random
 
 import numpy as np
 
-from evolutionary_algorithms.evolutionary.helpers import vstack
 from evolutionary_algorithms.evolutionary.population import Population
 
 
@@ -87,11 +86,8 @@ class Mutation:
         population.get_better(mutated_population)
 
     def _last_no_zero_var_ind(self, new_var):
-        self.last_no_zero_var_ind = np.asarray(
-            [
-                new if (new != 0 and np.isfinite(new)) else last_non_zero
-                for (new, last_non_zero) in zip(new_var, self.last_no_zero_var_ind)
-            ]
+        self.last_no_zero_var_ind = np.where(
+            (np.isfinite(new_var)) & (new_var != 0), new_var, self.last_no_zero_var_ind
         )
         return self.last_no_zero_var_ind
 
@@ -108,55 +104,6 @@ class Mutation:
         self.current_mutation_position += self.mutation_size
         return mut_ind
 
-    def mask_ind(self, ind: np.ndarray):
-        ind[self.get_mutation_indexes()] = True
-
-    def mutation_mask(self, size):
-        mask = np.full((size, self.dimensions), False)
-        np.apply_along_axis(self.mask_ind, 1, mask)
-        return mask
-
-    def mapping_matrix(
-        self, population: Population, population_transposed, mask, pop_size
-    ):
-        var_individual = population.get_var_archive_individual()
-        self._last_no_zero_var_ind(var_individual)
-        var_ind_pop_size = np.vstack([var_individual] * pop_size)
-        last_no_zero_var_ind_pop_size = np.vstack(
-            [self.last_no_zero_var_ind] * pop_size
-        )
-
-        mean_ind_pop_size = vstack(population.get_mean_archive_individual, pop_size)
-        best_ind_pop_size = vstack(population.get_best_archive_individual, pop_size)
-
-        return best_ind_pop_size, zip(
-            population_transposed[mask],
-            mean_ind_pop_size[mask],
-            best_ind_pop_size[mask],
-            var_ind_pop_size[mask],
-            last_no_zero_var_ind_pop_size[mask],
-        )
-
-    def mapping_mutate(self, mapping_matrix):
-        mutated = []
-
-        for ind, mean_ind, best_ind, var_ind, last_no_zero_var in mapping_matrix:
-            si, si1, si2 = self.count_si(
-                best_ind,
-                mean_ind,
-                var_ind,
-                last_no_zero_var,
-            )
-            ind = self.transformation(
-                np.random.uniform(low=0, high=1, size=(1,))[0],
-                mean_ind,
-                si1,
-                si2,
-            )
-            mutated.append(ind)
-        mutated = np.asarray(mutated)
-        return mutated
-
     def mapping_mutation(
         self,
         population: Population,
@@ -164,18 +111,29 @@ class Mutation:
         """
         Strategy 2a used
         """
+        child = np.empty(self.dimensions, dtype=float)
+        mutation_indexes = self.get_mutation_indexes()
+        mean_individual = population.get_mean_individual()
+        best_individual = population.get_best_individual()
+        var_individual = population.get_var_individual()
+        self._last_no_zero_var_ind(var_individual)
+        last_no_zero_var_ind = self.last_no_zero_var_ind
+        for ind in mutation_indexes:
+            si, si1, si2 = self.count_si(
+                best_individual[ind],
+                mean_individual[ind],
+                var_individual[ind],
+                last_no_zero_var_ind[ind],
+            )
+            new_gene = self.transformation(
+                np.random.uniform(low=0, high=1, size=(1,))[0],
+                mean_individual[ind],
+                si1,
+                si2,
+            )
+            child[ind] = new_gene
 
-        population_transposed = population.population.T
-
-        mask = self.mutation_mask(self.pop_size)
-        best_ind_pop_size, mapping_matrix = self.mapping_matrix(
-            population, population_transposed, mask, self.pop_size
-        )
-
-        mutated = self.mapping_mutate(mapping_matrix)
-        population_transposed[mask] = mutated
-
-        return ~mask
+        return child, mutation_indexes
 
     def count_si(self, best_gene, mean_gene, var_gene, last_no_zero_var_gene):
 
