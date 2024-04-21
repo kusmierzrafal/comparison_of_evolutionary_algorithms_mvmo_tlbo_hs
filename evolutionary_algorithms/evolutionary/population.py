@@ -1,4 +1,3 @@
-import bisect
 import copy
 
 import numpy as np
@@ -81,6 +80,10 @@ class Population:
         denormalized_population = self.get_denormalized()
         self.evaluations = self._evaluate(denormalized_population, fitness_function)
 
+    def evaluate_denormalized_ind(self, child: np.ndarray, fitness_function: callable):
+        child = child * (self.boundaries[1] - self.boundaries[0]) + self.boundaries[0]
+        return fitness_function(child)
+
     def sort(self):
         sort = np.argsort(self.evaluations)
         self.population = self.population[:, sort]
@@ -91,11 +94,11 @@ class Population:
         self.best_population = self.best_population[:, sort]
         self.best_evaluations = self.best_evaluations[sort]
 
-    def get_mean_individual(self, n_best=None):
-        return np.mean(self.population[:, :n_best], axis=1)
+    def get_mean_individual(self):
+        return np.mean(self.population, axis=1)
 
-    def get_var_individual(self, n_best=None):
-        return np.var(self.population[:, :n_best], axis=1)
+    def get_var_individual(self):
+        return np.var(self.population, axis=1)
 
     def get_best_individual(self):
         """
@@ -129,30 +132,22 @@ class Population:
     def get_boundaries(self):
         return self.boundaries
 
-    def archive_best_population(self, n_best):
-        cur_best_size = self.best_population.shape[-1]
-        if cur_best_size < n_best:
-            self.init_best_population(cur_best_size, n_best)
+    def update_best_population(self, n_best, child: np.ndarray, child_val: float):
+        cur_pop_size = self.population.shape[-1]
+        if cur_pop_size < n_best:
+            self.append_child(child, child_val)
         else:
-            self.update_best_population(n_best)
+            self.update_population(child, child_val)
 
-    def update_best_population(self, n_best):
-        for index in range(self.size):
-            if self.evaluations[index] < self.best_evaluations[n_best - 1]:
-                insertion_index = bisect.bisect(
-                    self.best_evaluations, self.evaluations[index]
-                )
-                self.best_evaluations = np.insert(
-                    self.best_evaluations, insertion_index, self.evaluations[index]
-                )[:n_best]
-                self.best_population = np.insert(
-                    self.best_population,
-                    insertion_index,
-                    self.population[:, index],
-                    axis=1,
-                )[:, :n_best]
-            else:
-                break
+    def append_child(self, child: np.ndarray, child_val: float):
+        self.population = np.append(self.population, child, axis=1)
+        self.evaluations = np.append(self.evaluations, child_val)
+
+    def archive_best_population(self, n_best, optimize_function: callable):
+        self.evaluate(optimize_function)
+        self.sort()
+        self.population = self.population[:, :n_best]
+        self.evaluations = self.evaluations[:n_best]
 
     def update_population(self, child: np.ndarray, child_val: float):
         worst_ind = np.argmax(self.evaluations)

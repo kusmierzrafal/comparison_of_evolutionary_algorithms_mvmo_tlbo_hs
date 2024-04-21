@@ -22,7 +22,7 @@ def test_general_mvmo():
     best_val = optimizer.optimize(
         population, iterations, zakharov_function, zakharov_opt_val
     )
-    assert best_val == 5.6354105746494535e-09
+    assert best_val == 7.542182988758527e-09
 
 
 def general_mvmo_cec():

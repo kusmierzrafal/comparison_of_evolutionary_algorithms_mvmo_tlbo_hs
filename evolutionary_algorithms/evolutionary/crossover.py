@@ -4,7 +4,6 @@ from random import choice, randint, random, uniform
 
 import numpy as np
 
-from evolutionary_algorithms.evolutionary.helpers import vstack
 from evolutionary_algorithms.evolutionary.population import Population
 
 
@@ -32,6 +31,9 @@ class Crossover:
         self.dimensions = population.get_dimensions()
         self.boundaries = population.get_boundaries()
         self.size = population.get_size()
+
+    def mapping_population_based_parameters(self, population: Population):
+        self.dimensions = population.get_dimensions()
 
     def difference_vector_crossover(
         self, population: Population, optimize_function: callable
@@ -91,7 +93,7 @@ class Crossover:
         return np.where(evaluations != val)[0]
 
     def init_mapping_crossover(self, kwargs):
-
+        self.init_population_based_parameters = self.mapping_population_based_parameters
         return self.mapping_crossover
 
     def init_one_from_population_crossover(self, kwargs):
@@ -102,15 +104,15 @@ class Crossover:
         self.pcr = kwargs["population_considering_rate"]
         return self.one_from_population_crossover
 
-    @staticmethod
-    def mapping_crossover(population: Population, mask):
+    def mapping_crossover(
+        self, child: np.ndarray, mutation_indexes: np.ndarray, population: Population
+    ):
         """
         As input gets population to crossover and mask telling which individuals to cross
         """
-        population_transposed = population.population.T
-        pop_size = population.get_size()
-        best_ind_pop_size = vstack(population.get_best_archive_individual, pop_size)
-        population_transposed[mask] = best_ind_pop_size[mask]
+        crossed_child = population.get_best_individual()
+        crossed_child[mutation_indexes] = child[mutation_indexes]
+        return crossed_child.reshape(self.dimensions, 1)
 
     def one_from_population_crossover(self, population: Population):
         transposed_population = population.population.T

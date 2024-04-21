@@ -1,7 +1,9 @@
 import logging
 
 from evolutionary_algorithms.evolutionary.crossover import Crossover
-from evolutionary_algorithms.evolutionary.evolutionary_algorithm import EvolutionaryAlgorithm
+from evolutionary_algorithms.evolutionary.evolutionary_algorithm import (
+    EvolutionaryAlgorithm,
+)
 from evolutionary_algorithms.evolutionary.mutation import Mutation
 from evolutionary_algorithms.evolutionary.population import Population
 
@@ -53,19 +55,18 @@ class MVMO(EvolutionaryAlgorithm):
         optimize_function: callable,
         opt_val,
     ):
-
+        population.archive_best_population(self.n_best_size, optimize_function)
         population.normalize()
         self.mutation.init_population_based_parameters(population)
+        self.crossover.init_population_based_parameters(population)
         super().init_population_based_parameters(population, iterations)
 
         for iteration in range(iterations):
-            population.evaluate_denormalized(optimize_function)
-            population.sort()
-            population.archive_best_population(self.n_best_size)
-            mask_used = self.mutation.mutate(population)
-            self.crossover.cross(population, mask_used)
-
-            best_val = population.get_best_archive_value()
+            child, mutation_indexes = self.mutation.mutate(population)
+            child = self.crossover.cross(child, mutation_indexes, population)
+            child_val = population.evaluate_denormalized_ind(child, optimize_function)
+            population.update_best_population(self.n_best_size, child, child_val)
+            best_val = population.get_best_value()
 
             if super().termination_criterion(best_val, opt_val, iteration):
                 return best_val

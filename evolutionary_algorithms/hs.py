@@ -61,7 +61,6 @@ class HS(EvolutionaryAlgorithm):
 
             best_val = population.get_best_value()
 
-            print(best_val)
             if super().termination_criterion(best_val, opt_val, iteration):
                 return best_val
         return best_val
