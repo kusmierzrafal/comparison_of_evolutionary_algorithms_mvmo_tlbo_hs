@@ -67,7 +67,7 @@ class MVMO(EvolutionaryAlgorithm):
             child_val = population.evaluate_denormalized_ind(child, optimize_function)
             population.update_best_population(self.n_best_size, child, child_val)
             best_val = population.get_best_value()
-            print(best_val)
+
             if super().termination_criterion(best_val, opt_val, iteration):
                 return best_val
         return best_val
