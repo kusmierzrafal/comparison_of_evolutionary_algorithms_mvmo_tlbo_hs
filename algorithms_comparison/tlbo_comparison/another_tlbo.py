@@ -166,7 +166,10 @@ def tlbo(fitness, max_iter, population, boundaries):
             for j in range(n):
                 if classroom[i].fitness != classroom[j].fitness:
                     other_values_indexes.append(j)
-            p = random.choice(other_values_indexes)
+            try:
+                p = random.choice(other_values_indexes)
+            except:
+                continue
 
             # partner solution
             Xpartner = mutated_classroom[p]
