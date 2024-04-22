@@ -114,8 +114,12 @@ class Mutation:
         child = np.empty(self.dimensions, dtype=float)
         mutation_indexes = self.get_mutation_indexes()
         mean_individual = population.get_mean_individual()
+        # rounded in order to avoid minimal differences during comparison connected with rounding
+        mean_individual = np.round(mean_individual, 8)
         best_individual = population.get_best_individual()
         var_individual = population.get_var_individual()
+        # rounded in order to avoid minimal differences during comparison connected with rounding
+        var_individual = np.round(var_individual, 8)
         self._last_no_zero_var_ind(var_individual)
         last_no_zero_var_ind = self.last_no_zero_var_ind
         for ind in mutation_indexes:
@@ -125,6 +129,7 @@ class Mutation:
                 var_individual[ind],
                 last_no_zero_var_ind[ind],
             )
+
             new_gene = self.transformation(
                 np.random.uniform(low=0, high=1, size=(1,))[0],
                 mean_individual[ind],
@@ -142,21 +147,23 @@ class Mutation:
                 -1 * np.log(last_no_zero_var_gene) * self.shaping_scaling_factor_fs
             )
             si = si1 = si2 = last_no_zero_si
-            if si < self.val_shape_factor_sd:
-                self.val_shape_factor_sd = self.val_shape_factor_sd * self.kd
-                si1 = self.val_shape_factor_sd
-            elif si > self.val_shape_factor_sd:
-                self.val_shape_factor_sd = self.val_shape_factor_sd / self.kd
-                si1 = self.val_shape_factor_sd
+            # commented - not implemented in compared implementation
+            # if si < self.val_shape_factor_sd:
+            #     self.val_shape_factor_sd = self.val_shape_factor_sd * self.kd
+            #     si1 = self.val_shape_factor_sd
+            # elif si > self.val_shape_factor_sd:
+            #     self.val_shape_factor_sd = self.val_shape_factor_sd / self.kd
+            #     si1 = self.val_shape_factor_sd
         else:
             si = -1 * np.log(var_gene) * self.shaping_scaling_factor_fs
             si1 = si
             si2 = si
 
-        if best_gene < mean_gene:
-            si2 = si * self.asymmetry_factor_af
-        elif best_gene > mean_gene:
-            si1 = si * self.asymmetry_factor_af
+        # commented - not implemented in compared implementation
+        # if best_gene < mean_gene:
+        #     si2 = si * self.asymmetry_factor_af
+        # elif best_gene > mean_gene:
+        #     si1 = si * self.asymmetry_factor_af
 
         return si, si1, si2
 
