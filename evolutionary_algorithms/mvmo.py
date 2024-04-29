@@ -1,10 +1,8 @@
 import logging
 
-from evolutionary_algorithms.evolutionary.crossover import Crossover
 from evolutionary_algorithms.evolutionary.evolutionary_algorithm import (
     EvolutionaryAlgorithm,
 )
-from evolutionary_algorithms.evolutionary.mutation import Mutation
 from evolutionary_algorithms.evolutionary.population import Population
 
 
@@ -32,21 +30,15 @@ class MVMO(EvolutionaryAlgorithm):
 
         logging.basicConfig(filename="mvmo.log", filemode="a", format="%(message)s")
 
-        super().__init__()
-        self.shaping_scaling_factor_fs = shaping_scaling_factor_fs
-        self.asymmetry_factor_af = asymmetry_factor_af
-        self.val_shape_factor_sd = val_shape_factor_sd
-        self.n_best_size = n_best_size
-        self.mutation = Mutation(
+        super().__init__(
             "mapping_transformation",
             mutation_size=mutation_size,
             shaping_scaling_factor_fs=shaping_scaling_factor_fs,
             asymmetry_factor_af=asymmetry_factor_af,
             val_shape_factor_sd=val_shape_factor_sd,
         )
-        self.crossover = Crossover(
-            "mapping_transformation",
-        )
+
+        self.n_best_size = n_best_size
 
     def optimize(
         self,
@@ -57,8 +49,7 @@ class MVMO(EvolutionaryAlgorithm):
     ):
         population.archive_best_population(self.n_best_size, optimize_function)
         population.normalize()
-        self.mutation.init_population_based_parameters(population)
-        self.crossover.init_population_based_parameters(population)
+
         super().init_population_based_parameters(population, iterations)
 
         for iteration in range(iterations):
