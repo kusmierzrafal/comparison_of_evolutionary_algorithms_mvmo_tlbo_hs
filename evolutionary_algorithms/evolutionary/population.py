@@ -1,5 +1,3 @@
-import copy
-
 import numpy as np
 
 
@@ -16,8 +14,6 @@ class Population:
         self.boundaries = boundaries
         self.population = self.init_population()
         self.evaluations = None
-        self.best_population = np.asarray([])
-        self.best_evaluations = None
 
     def init_population(self) -> np.ndarray[np.ndarray]:
         """
@@ -89,11 +85,6 @@ class Population:
         self.population = self.population[:, sort]
         self.evaluations = self.evaluations[sort]
 
-    def sort_best(self):
-        sort = np.argsort(self.best_evaluations)
-        self.best_population = self.best_population[:, sort]
-        self.best_evaluations = self.best_evaluations[sort]
-
     def get_mean_individual(self):
         return np.mean(self.population, axis=1)
 
@@ -113,15 +104,6 @@ class Population:
 
     def get_mean_archive_individual(self):
         return np.mean(self.population, axis=1)
-
-    def get_var_archive_individual(self):
-        return np.var(self.best_population, axis=1)
-
-    def get_best_archive_individual(self):
-        return np.copy(self.best_population[:, 0])
-
-    def get_best_archive_value(self):
-        return self.best_evaluations[0]
 
     def get_size(self):
         return self.size
@@ -155,21 +137,6 @@ class Population:
         if self.evaluations[worst_ind] > child_val:
             self.evaluations[worst_ind] = child_val
             self.population.T[worst_ind] = child.flatten()
-
-    def init_best_population(self, cur_best_size, n_best):
-        if cur_best_size == 0:
-            self.best_population = copy.deepcopy(self.population)[:, :n_best]
-            self.best_evaluations = copy.deepcopy(self.evaluations)[:n_best]
-        else:
-            self.best_population = np.hstack(
-                [self.best_population, copy.deepcopy(self.population)]
-            )
-            self.best_evaluations = np.hstack(
-                [self.best_evaluations, copy.deepcopy(self.evaluations)]
-            )
-            self.sort_best()
-            self.best_population = self.best_population[:, :n_best]
-            self.best_evaluations = self.best_evaluations[:n_best]
 
     def ensure_boundaries(self):
         mask_lower = self.population < self.boundaries[0]
