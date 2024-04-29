@@ -1,6 +1,8 @@
 import logging
 from abc import ABC, abstractmethod
 
+from evolutionary_algorithms.evolutionary.crossover import Crossover
+from evolutionary_algorithms.evolutionary.mutation import Mutation
 from evolutionary_algorithms.evolutionary.population import Population
 
 
@@ -8,10 +10,21 @@ class EvolutionaryAlgorithm(ABC):
 
     def __init__(
         self,
+        algorithm,
+        **kwargs,
     ):
         self.error_value = 10**-8
         self.logging_times = 16
         self.k = 0
+
+        self.mutation = Mutation(
+            algorithm,
+            **kwargs,
+        )
+        self.crossover = Crossover(
+            algorithm,
+            **kwargs,
+        )
 
     @abstractmethod
     def optimize(
@@ -50,3 +63,6 @@ class EvolutionaryAlgorithm(ABC):
             k: dimensions ** (k / 5 - 3) * max_iterations
             for k in range(self.logging_times)
         }
+
+        self.mutation.init_population_based_parameters(population)
+        self.crossover.init_population_based_parameters(population)

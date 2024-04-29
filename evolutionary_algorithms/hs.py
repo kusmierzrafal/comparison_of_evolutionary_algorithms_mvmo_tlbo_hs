@@ -1,8 +1,8 @@
 import logging
 
-from evolutionary_algorithms.evolutionary.crossover import Crossover
-from evolutionary_algorithms.evolutionary.evolutionary_algorithm import EvolutionaryAlgorithm
-from evolutionary_algorithms.evolutionary.mutation import Mutation
+from evolutionary_algorithms.evolutionary.evolutionary_algorithm import (
+    EvolutionaryAlgorithm,
+)
 from evolutionary_algorithms.evolutionary.population import Population
 
 
@@ -26,18 +26,11 @@ class HS(EvolutionaryAlgorithm):
         """
         logging.basicConfig(filename="hs.log", filemode="a", format="%(message)s")
 
-        super().__init__()
-        self.pcr = pcr
-        self.mutation_factor = mutation_factor
-        self.mutation_size = mutation_size
-        self.crossover = Crossover(
+        super().__init__(
             "one_from_population",
-            population_considering_rate=self.pcr,
-        )
-        self.mutation = Mutation(
-            "one_from_population",
-            mutation_factor=self.mutation_factor,
-            mutation_size=self.mutation_size,
+            population_considering_rate=pcr,
+            mutation_factor=mutation_factor,
+            mutation_size=mutation_size,
         )
 
     def optimize(
@@ -47,8 +40,6 @@ class HS(EvolutionaryAlgorithm):
         optimize_function: callable,
         opt_val,
     ):
-        self.crossover.init_population_based_parameters(population)
-        self.mutation.init_population_based_parameters(population)
         super().init_population_based_parameters(population, iterations)
 
         population.evaluate(optimize_function)

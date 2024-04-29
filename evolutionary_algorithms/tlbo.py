@@ -2,9 +2,9 @@ import logging
 
 import numpy as np
 
-from evolutionary_algorithms.evolutionary.crossover import Crossover
-from evolutionary_algorithms.evolutionary.evolutionary_algorithm import EvolutionaryAlgorithm
-from evolutionary_algorithms.evolutionary.mutation import Mutation
+from evolutionary_algorithms.evolutionary.evolutionary_algorithm import (
+    EvolutionaryAlgorithm,
+)
 
 
 class TLBO(EvolutionaryAlgorithm):
@@ -20,15 +20,10 @@ class TLBO(EvolutionaryAlgorithm):
         :param boundaries: lower and higher limit of the range of every gene
         :type boundaries: tuple of floats
         """
-        self.mutation = Mutation(
-            "mean_difference_vector",
-        )
-        self.crossover = Crossover(
-            "mean_difference_vector",
-        )
+
         logging.basicConfig(filename="tlbo.log", filemode="a", format="%(message)s")
 
-        super().__init__()
+        super().__init__("mean_difference_vector")
 
     def optimize(
         self,
@@ -47,8 +42,6 @@ class TLBO(EvolutionaryAlgorithm):
         :rtype: numpy.ndarray
         """
 
-        self.mutation.init_population_based_parameters(population)
-        self.crossover.init_population_based_parameters(population)
         super().init_population_based_parameters(population, iterations)
 
         population.evaluate(optimize_function)
