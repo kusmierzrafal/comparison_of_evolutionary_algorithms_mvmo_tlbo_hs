@@ -20,7 +20,7 @@ def test_general_mvmo():
     optimizer = MVMO(1, 10, 1, 3, 75)
     population = Population(dimensions, pop_size, boundaries)
     best_val = optimizer.optimize(
-        population, iterations, zakharov_function, zakharov_opt_val
+        population, iterations, zakharov_function, zakharov_opt_val, "mvmo_test.txt"
     )
     assert best_val == 7.542182988758527e-09
 
@@ -37,7 +37,7 @@ def general_mvmo_cec():
     boundaries = (-100, 100)
     optimizer = MVMO(1, 10, 1, 3, 75)
     population = Population(dimensions, pop_size, boundaries)
-    optimizer.optimize(population, iterations, zakharov_cec_function, zakharov_opt_val)
+    optimizer.optimize(population, iterations, zakharov_cec_function, zakharov_opt_val, "mvmo_test.txt")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,3 @@
-import logging
-
 from evolutionary_algorithms.evolutionary.evolutionary_algorithm import (
     EvolutionaryAlgorithm,
 )
@@ -24,7 +22,6 @@ class HS(EvolutionaryAlgorithm):
         :param pcr: ranges from 0.0 to 1.0
         :type pcr: float
         """
-        logging.basicConfig(filename="hs.log", filemode="a", format="%(message)s")
 
         super().__init__(
             "one_from_population",
@@ -39,6 +36,7 @@ class HS(EvolutionaryAlgorithm):
         iterations: int,
         optimize_function: callable,
         opt_val,
+        result_file,
     ):
         super().init_population_based_parameters(population, iterations)
 
@@ -52,6 +50,6 @@ class HS(EvolutionaryAlgorithm):
 
             best_val = population.get_best_value()
 
-            if super().termination_criterion(best_val, opt_val, iteration):
+            if super().termination_criterion(best_val, opt_val, iteration, result_file):
                 return best_val
         return best_val

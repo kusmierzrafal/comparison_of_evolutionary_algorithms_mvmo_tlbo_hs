@@ -20,7 +20,7 @@ def test_general_hs():
     population = Population(dimensions, pop_size, boundaries)
     optimizer = HS(0.9, 0.25, 0.2)
     best_val = optimizer.optimize(
-        population, iterations, zakharov_function, zakharov_opt_val
+        population, iterations, zakharov_function, zakharov_opt_val, "hs_test.txt"
     )
 
     assert best_val == 1.0191034289361441e-05
@@ -38,7 +38,7 @@ def general_hs_cec():
     boundaries = (-100, 100)
     optimizer = HS(0.9, 0.25, 0.2)
     population = Population(dimensions, pop_size, boundaries)
-    optimizer.optimize(population, iterations, zakharov_cec_function, zakharov_opt_val)
+    optimizer.optimize(population, iterations, zakharov_cec_function, zakharov_opt_val, "hs_test.txt")
 
 
 if __name__ == "__main__":

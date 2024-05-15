@@ -1,4 +1,3 @@
-import logging
 from abc import ABC, abstractmethod
 
 from evolutionary_algorithms.evolutionary.crossover import Crossover
@@ -33,6 +32,7 @@ class EvolutionaryAlgorithm(ABC):
         iterations: int,
         optimize_function: callable,
         opt_val: int,
+        result_file: str,
     ):
         """
         Newly created algorithm inheriting from this class has to implement optimize function.
@@ -44,13 +44,15 @@ class EvolutionaryAlgorithm(ABC):
         """
         pass
 
-    def termination_criterion(self, best_val, opt_val, iteration):
+    def termination_criterion(self, best_val, opt_val, iteration, result_file):
         diff = best_val - opt_val
         if diff < self.error_value:
-            logging.warning(f"{iteration + 1}")
+            with open(result_file, "a") as myfile:
+                myfile.write(f"{iteration + 1}\n")
             return True
         if iteration + 1 >= self.k_FES[self.k]:
-            logging.warning(f"{diff}")
+            with open(result_file, "a") as myfile:
+                myfile.write(f"{diff}\n")
             self.k = self.k + 1
 
         return False

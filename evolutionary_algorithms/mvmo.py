@@ -1,5 +1,3 @@
-import logging
-
 from evolutionary_algorithms.evolutionary.evolutionary_algorithm import (
     EvolutionaryAlgorithm,
 )
@@ -28,8 +26,6 @@ class MVMO(EvolutionaryAlgorithm):
         :param val_shape_factor_sd: float number between 10.0 and 90.0
         """
 
-        logging.basicConfig(filename="mvmo.log", filemode="a", format="%(message)s")
-
         super().__init__(
             "mapping_transformation",
             mutation_size=mutation_size,
@@ -46,6 +42,7 @@ class MVMO(EvolutionaryAlgorithm):
         iterations: int,
         optimize_function: callable,
         opt_val,
+        result_file,
     ):
         population.archive_best_population(self.n_best_size, optimize_function)
         population.normalize()
@@ -59,6 +56,6 @@ class MVMO(EvolutionaryAlgorithm):
             population.update_best_population(self.n_best_size, child, child_val)
             best_val = population.get_best_value()
 
-            if super().termination_criterion(best_val, opt_val, iteration):
+            if super().termination_criterion(best_val, opt_val, iteration, result_file):
                 return best_val
         return best_val

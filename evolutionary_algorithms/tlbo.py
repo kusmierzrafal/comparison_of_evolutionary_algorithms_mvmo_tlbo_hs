@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 
 from evolutionary_algorithms.evolutionary.evolutionary_algorithm import (
@@ -21,8 +19,6 @@ class TLBO(EvolutionaryAlgorithm):
         :type boundaries: tuple of floats
         """
 
-        logging.basicConfig(filename="tlbo.log", filemode="a", format="%(message)s")
-
         super().__init__("mean_difference_vector")
 
     def optimize(
@@ -31,6 +27,7 @@ class TLBO(EvolutionaryAlgorithm):
         iterations: int,
         optimize_function: callable,
         opt_val,
+        result_file,
     ):
         """
         Searches for the best solution for a given number of iterations
@@ -53,6 +50,6 @@ class TLBO(EvolutionaryAlgorithm):
 
             best_val = population.get_best_value()
 
-            if super().termination_criterion(best_val, opt_val, iteration):
+            if super().termination_criterion(best_val, opt_val, iteration, result_file):
                 return best_val
         return best_val

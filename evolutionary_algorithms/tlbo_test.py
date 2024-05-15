@@ -20,7 +20,7 @@ def test_general_tlbo():
     optimizer = TLBO()
     population = Population(dimensions, pop_size, boundaries)
     best_val = optimizer.optimize(
-        population, iterations, zakharov_function, zakharov_opt_val
+        population, iterations, zakharov_function, zakharov_opt_val, "tlbo_test.txt"
     )
     assert best_val == 9.651445425007979e-09
 
@@ -37,7 +37,7 @@ def general_tlbo_cec():
     boundaries = (-100, 100)
     optimizer = TLBO()
     population = Population(dimensions, pop_size, boundaries)
-    optimizer.optimize(population, iterations, zakharov_cec_function, zakharov_opt_val)
+    optimizer.optimize(population, iterations, zakharov_cec_function, zakharov_opt_val, "tlbo_test.txt")
 
 
 if __name__ == "__main__":
