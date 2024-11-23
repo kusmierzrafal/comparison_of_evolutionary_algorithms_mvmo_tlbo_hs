@@ -80,7 +80,7 @@ for row in tlbo_stats_df.iterrows():
     tlbo_latex_table += tlbo_latex_body_table.format(pop_size=int(row[1]["pop_size"]), min_result=row[1]["min_result"], max_result=row[1]["max_result"], mean_result=row[1]["mean_result"], std_result=row[1]["std_result"])
 tlbo_latex_table += latex_table_end
 
-print(tlbo_latex_table)
+print(tlbo_latex_table.replace('.', ','))
 
 
 mvmo_result_df = pd.DataFrame(mvmo_all)
@@ -115,4 +115,4 @@ for row in mvmo_stats_df.iterrows():
                                                      std_result=row[1]["std_result"])
 mvmo_latex_table += latex_table_end
 
-print(mvmo_latex_table)
+print(mvmo_latex_table.replace('.', ','))
