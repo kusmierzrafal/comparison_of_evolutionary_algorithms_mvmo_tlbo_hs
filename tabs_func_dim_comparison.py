@@ -27,10 +27,14 @@ LATEX_TABLE_HEADER_DICT = {
 }
 
 LATEX_TABLE_COLUMN_NAMES_2 = """
-    Funkcja & \multicolumn{{2}}{{|c|}}{{{first_alg}}} & \multicolumn{{3}}{{|c|}}{{{second_alg}}} & \multicolumn{{3}}{{|c|}}{{{third_alg}}} \\\\ \hline"""
+     & \multicolumn{{2}}{{|c|}}{{{first_alg}}} & \multicolumn{{3}}{{|c|}}{{{second_alg}}} & \multicolumn{{3}}{{|c|}}{{{third_alg}}} \\\\ \hline
+     Funkcja & średnia & odchylenie & średnia & odchylenie & & średnia & odchylenie &  \\\\ \hline
+     """
 
 LATEX_TABLE_COLUMN_NAMES_1 = """
-    Funkcja & \multicolumn{{2}}{{|c|}}{{{first_alg}}} & \multicolumn{{3}}{{|c|}}{{{second_alg}}} \\\\ \hline"""
+     & \multicolumn{{2}}{{|c|}}{{{first_alg}}} & \multicolumn{{3}}{{|c|}}{{{second_alg}}} \\\\ \hline
+     Funkcja & średnia & odchylenie & średnia & odchylenie & \\\\ \hline
+     """
 
 
 LATEX_TABLE_COLUMN_NAMES_DICT = {
@@ -38,11 +42,22 @@ LATEX_TABLE_COLUMN_NAMES_DICT = {
     2: LATEX_TABLE_COLUMN_NAMES_2
 }
 
-LATEX_END_TABLE = f"""
-
+LATEX_END_TABLE_1 = """
+& \multicolumn{{2}}{{|c|}}{{+/-/=}} & \multicolumn{{3}}{{|c|}}{{{second_alg_sum}}} \\\\ \hline
 \end{{tabular}}
 \end{{table}}
 """
+
+LATEX_END_TABLE_2 = """
+& \multicolumn{{2}}{{|c|}}{{+/-/=}} & \multicolumn{{3}}{{|c|}}{{{second_alg_sum}}} & \multicolumn{{3}}{{|c|}}{{{third_alg_sum}}} \\\\ \hline
+\end{{tabular}}
+\end{{table}}
+"""
+
+LATEX_END_TABLE_DICT = {
+    1: LATEX_END_TABLE_1,
+    2: LATEX_END_TABLE_2
+}
 
 PATH_DICT = {
 "MVMO": "result_tables",
@@ -109,11 +124,18 @@ for algorithm in ALGORITHMS:
 
 def wst(first_alg, second_alg, row):
     if row[f"{second_alg} mean"] * 1.05 < row[f"{first_alg} mean"]:
-        return '-'
-    elif row[f"{second_alg} mean"] > row[f"{first_alg} mean"] * 1.05:
         return '+'
+    elif row[f"{second_alg} mean"] > row[f"{first_alg} mean"] * 1.05:
+        return '-'
     else:
         return '='
+
+
+def get_wst(df, wst):
+    try:
+        return df[wst]
+    except:
+        return 0
 
 
 def gen_table(first, all, dim):
@@ -152,8 +174,19 @@ def gen_table(first, all, dim):
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', 9999)
-    print(comparison_df.apply(lambda row: " & ".join([str(x) for x in row]) + "\\\\ \hline", axis=1).to_string(index=False))
-    print(LATEX_END_TABLE)
+    print(comparison_df.apply(lambda row: " & ".join([str(x) for x in row]) + "\\\\ \hline", axis=1).to_string(index=False).replace('.', ','))
+    if num == 1:
+        all_0_wst = comparison_df[all[0] + " WST"].value_counts()
+        print(LATEX_END_TABLE_1.format(
+            second_alg_sum=f"{get_wst(all_0_wst, '+')}/{get_wst(all_0_wst, '-')}/{get_wst(all_0_wst, '=')}",
+        ))
+    elif num == 2:
+        all_0_wst = comparison_df[all[0] + " WST"].value_counts()
+        all_1_wst = comparison_df[all[1] + " WST"].value_counts()
+        print(LATEX_END_TABLE_2.format(
+            second_alg_sum=f"{get_wst(all_0_wst, '+')}/{get_wst(all_0_wst, '-')}/{get_wst(all_0_wst, '=')}",
+            third_alg_sum=f"{get_wst(all_1_wst, '+')}/{get_wst(all_1_wst, '-')}/{get_wst(all_1_wst, '=')}",
+        ))
 
 
 alg = "HS"
