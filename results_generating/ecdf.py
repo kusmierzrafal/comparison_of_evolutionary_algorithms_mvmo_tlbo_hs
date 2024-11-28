@@ -18,7 +18,7 @@ ALGORITHMS_SOTA = [
     "NL-SHADE-RSP-MID",
 ]
 ALGORITHMS = ALGORITHMS_OUR + ALGORITHMS_SOTA
-
+ALGORITHMS_MARKERS = dict(zip(ALGORITHMS, ['.', 'v', '1', '8', 's', 'p', '*', '+']))
 
 LATEX_FIG = """
 \\begin{{figure}}[H]
@@ -45,7 +45,7 @@ PATH_DICT = {
     "NL-SHADE-RSP-MID": "other_best_results/Results",
 }
 
-test_results = os.listdir(f"./tests/final_test/mvmo")
+test_results = os.listdir(f"../tests/final_test/mvmo")
 done = []
 
 for result in test_results:
@@ -81,23 +81,22 @@ ALGORITHMS_NAME_DICT = {
 }
 
 
+def log_range_achieved(val):
+    bisect.insort(log_range, val)
+    ind = log_range.index(val)
+    del log_range[ind]
+    return 51 - ind
+
+
 def get_log_range_result(algorithm, func, dim):
     result_df = pd.read_csv(
-        f"./tests/{PATH_DICT[algorithm]}/{ALGORITHMS_NAME_DICT[algorithm]}_{func}_{dim}.txt",
+        f"../tests/{PATH_DICT[algorithm]}/{ALGORITHMS_NAME_DICT[algorithm]}_{func}_{dim}.txt",
         delim_whitespace=True,
         header=None,
     )
-    result_mean = (
-        result_df.iloc[:16, :].apply(lambda x: sum(x) / float(len(x)), axis=1).tolist()
-    )
-    result_mean_achieved = []
-    for result in result_mean:
-        bisect.insort(log_range, result)
-        ind = log_range.index(result)
-        result_mean_achieved.append((51 - ind) / 51)
-        del log_range[ind]
-
-    return result_mean_achieved
+    result_df = result_df.iloc[:16, :]
+    result_df = result_df.applymap(log_range_achieved)
+    return result_df.apply(lambda x: sum(x) / (len(x) * 51), axis=1).tolist()
 
 
 for dim in ["10", "20"]:
@@ -106,14 +105,14 @@ for dim in ["10", "20"]:
         fig.set_figwidth(8)
         fig.set_figheight(6)
         for algorithm in ALGORITHMS:
-            ax.plot(x, get_log_range_result(algorithm, func, dim), label=algorithm)
+            ax.plot(x, get_log_range_result(algorithm, func, dim), label=algorithm, marker=ALGORITHMS_MARKERS[algorithm])
         ax.legend()
         plt.ylabel("proporcja zdobytych progów celu")
         plt.xlabel(
             "Numer zrzutu - k z wymiar ^ (k / 5 - 3) * maksymalna liczba ewaluacji"
         )
         plt.title(f"Funkcja z CEC2022 numer {func} dla wymiaru = {dim}")
-        plt.savefig(f"./func_dim_all_algs_png/{func}_{dim}.png")
+        plt.savefig(f"../func_dim_all_algs_png/{func}_{dim}.png")
 
 for func in range(1, 13, 1):
     print(LATEX_FIG.format(func=func))
