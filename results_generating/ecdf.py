@@ -33,15 +33,10 @@ ALGORITHMS_LABELS = {
 
 LATEX_FIG = """
 \\begin{{figure}}[H]
-    \label{{fig:tradycyjne-logo-pw}}
-    \centering \includegraphics[width=0.88\linewidth]{{eiti/{func}_10.png}}
-    \caption{{Wykres przedstawiający krzywe ECDF dla porównywanych algorytmów dla eksperymentów funkcji {func} dla 10 wymiarów.}}
-\end{{figure}}
-
-\\begin{{figure}}[H]
-    \label{{fig:tradycyjne-logo-pw}}
-    \centering \includegraphics[width=0.88\linewidth]{{eiti/{func}_20.png}}
-    \caption{{Wykres przedstawiający krzywe ECDF dla porównywanych algorytmów dla eksperymentów funkcji {func} dla 20 wymiarów.}}
+    \label{{fig:foobar}}
+    \includegraphics[width=0.5\linewidth]{{eiti/{func}_10.png}}
+    \includegraphics[width=0.5\linewidth]{{eiti/{func}_20.png}}
+    \caption{{Wykres przedstawiający krzywe ECDF dla porównywanych algorytmów dla eksperymentów funkcji {func} dla 10 oraz 20 wymiarów.}}
 \end{{figure}}
 """
 
