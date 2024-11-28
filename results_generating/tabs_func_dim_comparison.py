@@ -2,10 +2,20 @@ import os
 import pandas as pd
 from functools import partial
 from decimal import Decimal
+from scipy.stats import wilcoxon
+
 
 ALGORITHMS_OUR = ["MVMO", "TLBO", "HS"]
 ALGORITHMS_SOTA = ["CEC2022_EA4eig_CORRECTED", "jSObinexpEig", "MTT_SHADE_CEC_CORR", "NL-SHADE-LBC", "NL-SHADE-RSP-MID"]
 ALGORITHMS = ALGORITHMS_OUR + ALGORITHMS_SOTA
+
+
+LATEX_TABLE_HEADER_3 = """
+\\begin{{table}}[H] \label{{tab:tabela1}} \centering
+\caption{{Porównanie algorytmu {algorithm} z innymi w oparciu o CEC2022 dla {dim} wymiarów.}}
+\\begin{{tabular}} {{| c | c | c | c | c | c | c | c | c | c | c | c |}} \hline
+
+"""
 
 LATEX_TABLE_HEADER_2 = """
 \\begin{{table}}[H] \label{{tab:tabela1}} \centering
@@ -23,23 +33,30 @@ LATEX_TABLE_HEADER_1 = """
 
 LATEX_TABLE_HEADER_DICT = {
     1: LATEX_TABLE_HEADER_1,
-    2: LATEX_TABLE_HEADER_2
+    2: LATEX_TABLE_HEADER_2,
+    3: LATEX_TABLE_HEADER_3
 }
+
+LATEX_TABLE_COLUMN_NAMES_3 = """
+     & \multicolumn{{2}}{{|c|}}{{{first_alg}}} & \multicolumn{{3}}{{|c|}}{{{second_alg}}} & \multicolumn{{3}}{{|c|}}{{{third_alg}}} & \multicolumn{{3}}{{|c|}}{{{fourth_alg}}} \\\\ \hline
+     Funkcja & średnia & odchylenie & średnia & odchylenie & wst & średnia & odchylenie & wst  & średnia & odchylenie & wst  \\\\ \hline
+     """
 
 LATEX_TABLE_COLUMN_NAMES_2 = """
      & \multicolumn{{2}}{{|c|}}{{{first_alg}}} & \multicolumn{{3}}{{|c|}}{{{second_alg}}} & \multicolumn{{3}}{{|c|}}{{{third_alg}}} \\\\ \hline
-     Funkcja & średnia & odchylenie & średnia & odchylenie & & średnia & odchylenie &  \\\\ \hline
+     Funkcja & średnia & odchylenie & średnia & odchylenie & & średnia & odchylenie & WST  \\\\ \hline
      """
 
 LATEX_TABLE_COLUMN_NAMES_1 = """
      & \multicolumn{{2}}{{|c|}}{{{first_alg}}} & \multicolumn{{3}}{{|c|}}{{{second_alg}}} \\\\ \hline
-     Funkcja & średnia & odchylenie & średnia & odchylenie & \\\\ \hline
+     Funkcja & średnia & odchylenie & średnia & odchylenie & WST \\\\ \hline
      """
 
 
 LATEX_TABLE_COLUMN_NAMES_DICT = {
     1: LATEX_TABLE_COLUMN_NAMES_1,
-    2: LATEX_TABLE_COLUMN_NAMES_2
+    2: LATEX_TABLE_COLUMN_NAMES_2,
+    3: LATEX_TABLE_COLUMN_NAMES_3
 }
 
 LATEX_END_TABLE_1 = """
@@ -53,10 +70,16 @@ LATEX_END_TABLE_2 = """
 \end{{tabular}}
 \end{{table}}
 """
+LATEX_END_TABLE_3 = """
+& \multicolumn{{2}}{{|c|}}{{+/-/=}} & \multicolumn{{3}}{{|c|}}{{{second_alg_sum}}} & \multicolumn{{3}}{{|c|}}{{{third_alg_sum}}} & \multicolumn{{3}}{{|c|}}{{{fourth_alg_sum}}} \\\\ \hline
+\end{{tabular}}
+\end{{table}}
+"""
 
 LATEX_END_TABLE_DICT = {
     1: LATEX_END_TABLE_1,
-    2: LATEX_END_TABLE_2
+    2: LATEX_END_TABLE_2,
+    3: LATEX_END_TABLE_3
 }
 
 PATH_DICT = {
@@ -70,7 +93,7 @@ PATH_DICT = {
 "NL-SHADE-RSP-MID": "other_best_results/Results",
 }
 
-test_results = os.listdir(f'./tests/final_test/mvmo')
+test_results = os.listdir(f'../tests/final_test/mvmo')
 done = []
 
 for result in test_results:
@@ -81,6 +104,8 @@ for result in test_results:
     done.append((dim, func, run))
 RESULT_DF = pd.DataFrame(done)
 RESULT_DF.columns = ["dim", "func", "run"]
+RESULT_DF.run = RESULT_DF.run.astype(int)
+RESULT_DF.func = RESULT_DF.func.astype(int)
 
 
 RESULTS_DICT = {
@@ -96,9 +121,9 @@ RESULTS_DICT = {
 
 
 def get_result_temp(algorithm, row):
-    result_df = pd.read_csv(f"./tests/{PATH_DICT[algorithm]}/{algorithm.lower()}_{row['func']}_{row['dim']}.txt", delim_whitespace=True, header=None)
+    result_df = pd.read_csv(f"../tests/{PATH_DICT[algorithm]}/{algorithm.lower()}_{row['func']}_{row['dim']}.txt", delim_whitespace=True, header=None)
     result = result_df[int(row['run']) - 1].iloc[15]
-    return result
+    return 0 if result <= 10 ** -8 else result
 
 
 def stats(algorithm, dim):
@@ -108,7 +133,6 @@ def stats(algorithm, dim):
 
     stats_df.columns = ["mean", "std"]
     stats_df = stats_df.reset_index()
-    stats_df.func = stats_df.func.astype(int)
     stats_df = stats_df.sort_values(["func"])
     return stats_df
 
@@ -122,13 +146,21 @@ for algorithm in ALGORITHMS:
 #     for dim in ["20"]:
 #         stats(algorithm, dim)
 
-def wst(first_alg, second_alg, row):
-    if row[f"{second_alg} mean"] * 1.05 < row[f"{first_alg} mean"]:
-        return '+'
-    elif row[f"{second_alg} mean"] > row[f"{first_alg} mean"] * 1.05:
-        return '-'
+def wst(first_alg, second_alg, dim, row):
+    first_alg_results = RESULTS_DICT[first_alg][(RESULTS_DICT[first_alg].dim == dim) & (RESULTS_DICT[first_alg].func == int(row['func']))].sort_values('run').result.tolist()
+    second_alg_results = RESULTS_DICT[second_alg][(RESULTS_DICT[second_alg].dim == dim) & (RESULTS_DICT[second_alg].func == int(row['func']))].sort_values('run').result.tolist()
+
+    if first_alg_results == second_alg_results:
+        pvalue = 1
     else:
+        pvalue = wilcoxon(first_alg_results, second_alg_results).pvalue
+
+    if pvalue >= 0.05:
         return '='
+    elif row[f"{second_alg} mean"] < row[f"{first_alg} mean"]:
+        return '+'
+    elif row[f"{second_alg} mean"] > row[f"{first_alg} mean"]:
+        return '-'
 
 
 def get_wst(df, wst):
@@ -148,10 +180,9 @@ def gen_table(first, all, dim):
     comparison_df.columns = ['func'] + [first + ' ' + col for col in comparison_df.columns[1:]]
     for algorithm in all:
         to_compare_df = stats(algorithm, dim)
-        to_compare_df = to_compare_df.applymap(lambda x: 0 if x <= 10**-8 else x)
         to_compare_df.columns = ['func'] + [algorithm + ' ' + col for col in to_compare_df.columns[1:]]
         comparison_df = comparison_df.merge(to_compare_df, left_on="func", right_on="func")
-        comparison_df[algorithm + ' ' + 'WST'] = comparison_df.apply(partial(wst, first, algorithm), axis=1)
+        comparison_df[algorithm + ' ' + 'WST'] = comparison_df.apply(partial(wst, first, algorithm, dim), axis=1)
 
     print(LATEX_TABLE_HEADER_DICT[num].format(algorithm=first, dim=dim))
     if num == 1:
@@ -165,6 +196,14 @@ def gen_table(first, all, dim):
             first_alg=first,
             second_alg=all[0],
             third_alg=all[1],
+        ).replace('_', '\\_')
+              )
+    elif num == 3:
+        print(LATEX_TABLE_COLUMN_NAMES_DICT[num].format(
+            first_alg=first,
+            second_alg=all[0],
+            third_alg=all[1],
+            fourth_alg=all[2]
         ).replace('_', '\\_')
               )
     cols_to_cast = [col for col in comparison_df.columns if col.endswith("std") or col.endswith("mean")]
@@ -187,14 +226,23 @@ def gen_table(first, all, dim):
             second_alg_sum=f"{get_wst(all_0_wst, '+')}/{get_wst(all_0_wst, '-')}/{get_wst(all_0_wst, '=')}",
             third_alg_sum=f"{get_wst(all_1_wst, '+')}/{get_wst(all_1_wst, '-')}/{get_wst(all_1_wst, '=')}",
         ))
+    elif num == 3:
+        all_0_wst = comparison_df[all[0] + " WST"].value_counts()
+        all_1_wst = comparison_df[all[1] + " WST"].value_counts()
+        all_2_wst = comparison_df[all[2] + " WST"].value_counts()
+        print(LATEX_END_TABLE_3.format(
+            second_alg_sum=f"{get_wst(all_0_wst, '+')}/{get_wst(all_0_wst, '-')}/{get_wst(all_0_wst, '=')}",
+            third_alg_sum=f"{get_wst(all_1_wst, '+')}/{get_wst(all_1_wst, '-')}/{get_wst(all_1_wst, '=')}",
+            fourth_alg_sum=f"{get_wst(all_2_wst, '+')}/{get_wst(all_2_wst, '-')}/{get_wst(all_2_wst, '=')}",
+        ))
 
 
-alg = "HS"
+alg = "CEC2022_EA4eig_CORRECTED"
 for dim in ["10", "20"]:
     gen_table(alg, ALGORITHMS_OUR, dim)
-for dim in ["10", "20"]:
-    gen_table(alg, ALGORITHMS_SOTA[:2], dim)
-for dim in ["10", "20"]:
-    gen_table(alg, ALGORITHMS_SOTA[2:4], dim)
-for dim in ["10", "20"]:
-    gen_table(alg, ALGORITHMS_SOTA[4:], dim)
+# for dim in ["10", "20"]:
+#     gen_table(alg, ALGORITHMS_SOTA[:2], dim)
+# for dim in ["10", "20"]:
+#     gen_table(alg, ALGORITHMS_SOTA[2:4], dim)
+# for dim in ["10", "20"]:
+#     gen_table(alg, ALGORITHMS_SOTA[4:], dim)
