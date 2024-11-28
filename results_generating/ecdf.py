@@ -20,6 +20,17 @@ ALGORITHMS_SOTA = [
 ALGORITHMS = ALGORITHMS_OUR + ALGORITHMS_SOTA
 ALGORITHMS_MARKERS = dict(zip(ALGORITHMS, ['.', 'v', '1', '8', 's', 'p', '*', '+']))
 
+ALGORITHMS_LABELS = {
+    "MVMO": "MVMO",
+    "TLBO": "TLBO",
+    "HS": "HS",
+    "CEC2022_EA4eig_CORRECTED": "EA4eig",
+    "jSObinexpEig": "jSObinexpEig",
+    "MTT_SHADE_CEC_CORR": "MTT_SHADE",
+    "NL-SHADE-LBC": "NL-SHADE-LBC",
+    "NL-SHADE-RSP-MID": "NL-SHADE-RSP-MID",
+}
+
 LATEX_FIG = """
 \\begin{{figure}}[H]
     \label{{fig:tradycyjne-logo-pw}}
@@ -105,7 +116,7 @@ for dim in ["10", "20"]:
         fig.set_figwidth(8)
         fig.set_figheight(6)
         for algorithm in ALGORITHMS:
-            ax.plot(x, get_log_range_result(algorithm, func, dim), label=algorithm, marker=ALGORITHMS_MARKERS[algorithm])
+            ax.plot(x, get_log_range_result(algorithm, func, dim), label=ALGORITHMS_LABELS[algorithm], marker=ALGORITHMS_MARKERS[algorithm])
         ax.legend()
         plt.ylabel("proporcja zdobytych progów celu")
         plt.xlabel(
