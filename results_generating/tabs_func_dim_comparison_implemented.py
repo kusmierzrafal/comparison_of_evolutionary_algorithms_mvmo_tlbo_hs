@@ -107,6 +107,9 @@ def wst(first_alg, second_alg, dim, row):
     first_alg_results = RESULTS_DICT[first_alg][(RESULTS_DICT[first_alg].dim == dim) & (RESULTS_DICT[first_alg].func == int(row['func']))].sort_values('run').result.tolist()
     second_alg_results = RESULTS_DICT[second_alg][(RESULTS_DICT[second_alg].dim == dim) & (RESULTS_DICT[second_alg].func == int(row['func']))].sort_values('run').result.tolist()
 
+    first_alg_results = [round(x, 2) for x in first_alg_results]
+    second_alg_results = [round(x, 2) for x in second_alg_results]
+
     if first_alg_results == second_alg_results:
         pvalue = 1
     else:
