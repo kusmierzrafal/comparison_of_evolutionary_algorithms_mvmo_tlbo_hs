@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-files_to_check = os.listdir('./tests/hyperparameters_tuning/')
+files_to_check = os.listdir('../tests/hyperparameters_tuning/')
 mvmo_done = []
 tlbo_done = []
 
@@ -29,7 +29,7 @@ for pop_size in range(10, 80, 10):
 def get_result_tlbo(row):
     pop_size = row["pop_size"]
     run = row["run"]
-    f = open(f'./tests/hyperparameters_tuning/tlbo__6_{pop_size}_{int(200000 / 2 // pop_size)}_20_{run}.txt')
+    f = open(f'../tests/hyperparameters_tuning/tlbo__6_{pop_size}_{int(200000 / 2 // pop_size)}_20_{run}.txt')
     content = f.read()
     result = content.rstrip().split('\n')[-1]
     return round(float(result), 2)
@@ -37,7 +37,7 @@ def get_result_tlbo(row):
 def get_result_mvmo(row):
     n_best_size = row["n_best_size"]
     run = row["run"]
-    f = open(f'./tests/hyperparameters_tuning/mvmo_1_{n_best_size}_1_1_75__6_50_200000_20_{run}.txt')
+    f = open(f'../tests/hyperparameters_tuning/mvmo_1_{n_best_size}_1_1_75__6_50_200000_20_{run}.txt')
     content = f.read()
     result = content.rstrip().split('\n')[-1]
     return round(float(result), 2)
@@ -59,8 +59,8 @@ tlbo_stats_df = tlbo_stats_df.reset_index()
 tlbo_latex_table_start = f"""
 \\begin{{table}}[H] \label{{tab:tabela1}} \centering
 \caption{{Dobór parametrów TLBO}}
-\\begin{{tabular}} {{| c | c | c | c | c |}} \hline
-    rozmiar populacji & najlepszy wynik & najsłabszy wynik & średni wynik & odchylenie \\\\ \hline
+\\begin{{tabular}} {{| c | r | r | r | r |}} \hline
+    \multicolumn{{1}}{{|c|}}{{rozmiar populacji}} & \multicolumn{{1}}{{c|}}{{najlepszy wynik}} & \multicolumn{{1}}{{c|}}{{najsłabszy wynik}} & \multicolumn{{1}}{{c|}}{{średni wynik}} & \multicolumn{{1}}{{c|}}{{odchylenie}} \\\\ \hline
     
 """
 
@@ -77,7 +77,13 @@ latex_table_end = f"""
 tlbo_latex_table = ""
 tlbo_latex_table += tlbo_latex_table_start
 for row in tlbo_stats_df.iterrows():
-    tlbo_latex_table += tlbo_latex_body_table.format(pop_size=int(row[1]["pop_size"]), min_result=row[1]["min_result"], max_result=row[1]["max_result"], mean_result=row[1]["mean_result"], std_result=row[1]["std_result"])
+    tlbo_latex_table += tlbo_latex_body_table.format(
+        pop_size=int(row[1]["pop_size"]),
+        min_result="%.2f" % row[1]["min_result"],
+        max_result="%.2f" % row[1]["max_result"],
+        mean_result="%.2f" % row[1]["mean_result"],
+        std_result="%.2f" % row[1]["std_result"]
+    )
 tlbo_latex_table += latex_table_end
 
 print(tlbo_latex_table.replace('.', ','))
@@ -98,8 +104,8 @@ mvmo_stats_df = mvmo_stats_df.reset_index()
 mvmo_latex_table_start = f"""
 \\begin{{table}}[H] \label{{tab:tabela1}} \centering
 \caption{{Dobór parametrów MVMO}}
-\\begin{{tabular}} {{| c | c | c | c | c |}} \hline
-    rozmiar archiwum & najlepszy wynik & najsłabszy wynik & średni wynik & odchylenie \\\\ \hline
+\\begin{{tabular}} {{| c | r | r | r | r |}} \hline
+    \multicolumn{{1}}{{|c|}}{{rozmiar archiwum}} & \multicolumn{{1}}{{c|}}{{najlepszy wynik}} & \multicolumn{{1}}{{c|}}{{najsłabszy wynik}} & \multicolumn{{1}}{{c|}}{{średni wynik}} & \multicolumn{{1}}{{c|}}{{odchylenie}} \\\\ \hline
 
 """
 
@@ -110,9 +116,13 @@ mvmo_latex_body_table = """
 mvmo_latex_table = ""
 mvmo_latex_table += mvmo_latex_table_start
 for row in mvmo_stats_df.iterrows():
-    mvmo_latex_table += mvmo_latex_body_table.format(n_best_size=int(row[1]["n_best_size"]), min_result=row[1]["min_result"],
-                                                     max_result=row[1]["max_result"], mean_result=row[1]["mean_result"],
-                                                     std_result=row[1]["std_result"])
+    mvmo_latex_table += mvmo_latex_body_table.format(
+        n_best_size=int(row[1]["n_best_size"]),
+        min_result="%.2f" % row[1]["min_result"],
+        max_result="%.2f" % row[1]["max_result"],
+        mean_result="%.2f" % row[1]["mean_result"],
+        std_result="%.2f" % row[1]["std_result"]
+    )
 mvmo_latex_table += latex_table_end
 
 print(mvmo_latex_table.replace('.', ','))
