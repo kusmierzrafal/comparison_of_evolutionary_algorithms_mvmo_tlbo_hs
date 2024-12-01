@@ -112,7 +112,7 @@ def get_log_range_result(algorithm, dims):
             result_df = result_df.iloc[:16, :]
             result_df = result_df.applymap(log_range_achieved)
             agg_result_df = pd.concat([agg_result_df, result_df], axis=1)
-    return result_df.apply(lambda x: sum(x) / (len(x) * 51), axis=1).tolist()
+    return agg_result_df.apply(lambda x: sum(x) / (len(x) * 51), axis=1).tolist()
 
 
 for dims in [['10', '20'], ['10'], ['20']]:
