@@ -67,11 +67,12 @@ def plot_transformation():
     consts_linestyles = ["solid"] * 5
     linestyles = ["dashed", "solid"]
 
-    colors = ["cyan", "purple", "green", "red", "blue"]
+    colors = ["blue", "red", "green", "purple", "cyan"]
 
     indexes = slice(2, 4)
 
-    means_labels = [f"x` = {mean}" for mean in means]
+    x_overline = r'$\bar{x}$'
+    means_labels = [f"{x_overline} = {str(mean).replace('.', ',')}" for mean in means]
     shaping_scaling_factors_labels = [
         f"s = {factor}" for factor in shaping_scaling_factors
     ]
