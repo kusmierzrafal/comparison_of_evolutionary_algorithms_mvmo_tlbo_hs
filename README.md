@@ -14,4 +14,4 @@
   - final_test - cec2022 experiments results for mvmo, hs and tlbo
   - hyperparameters_tuning - hyperparameters tuning results
   - other_best_results - cec2022 experiments results for cec2022 top algorithms
-  - result_tables - tables with comparison cec results for mvmo, tlbo, hs and cec2022 top algorithms
+  - result_tables - tables with aggregated cec2022 experiments results for mvmo, ha and tlbo
