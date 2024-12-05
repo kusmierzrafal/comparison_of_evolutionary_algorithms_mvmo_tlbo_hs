@@ -1,0 +1,17 @@
+### Project structure
+- evolutionary_algorithms
+  - evolutionary - main library enabling easy implementation of evolutionary algorithms
+  - hs.py - hs implementation
+  - hs_test.py - example of use hs algorithm
+  - mvmo.py - mvmo implementation
+  - mvmo_test.py - example of use mvmo algorithm
+  - tlbo.py - tlbo implementation
+  - tlbo_test.py - example of use tlbo algorithm
+- func_dim_all_algs_png - ecdf plots generated
+- optimization_functions - includes simple optimization functions and whole cec benchmark
+- results_generating - scripts used for latex tables and plots generating
+- tests
+  - final_test - cec2022 experiments results for mvmo, hs and tlbo
+  - hyperparameters_tuning - hyperparameters tuning results
+  - other_best_results - cec2022 experiments results for cec2022 top algorithms
+  - result_tables - tables with comparison cec results for mvmo, tlbo, hs and cec2022 top algorithms
