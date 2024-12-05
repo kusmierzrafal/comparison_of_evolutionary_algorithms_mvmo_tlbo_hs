@@ -70,7 +70,7 @@ def visualize(
         ax.plot(
             x,
             [
-                another_implementation_mapping_transformation_fixed(
+                another_implementation_mapping_transformation(
                     random_xi, mean, factor_1
                 )
                 # another_implementation_mapping_transformation(random_xi, mean, factor_1)
@@ -96,7 +96,8 @@ def plot_transformation():
 
     colors = ["cyan", "purple", "green", "red", "blue"]
 
-    means_labels = [f"x` = {mean}" for mean in means]
+    x_overline = r'$\bar{x}$'
+    means_labels = [f"{x_overline} = {mean}" for mean in means]
     shaping_scaling_factors_labels = [
         f"s = {factor}" for factor in shaping_scaling_factors
     ]
