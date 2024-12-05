@@ -35,7 +35,6 @@ class TLBO(EvolutionaryAlgorithm):
         population: list[np.ndarray],
         iterations: int,
         optimize_function: callable,
-        opt_val,
     ):
         """
         Searches for the best solution for a given number of iterations
@@ -58,8 +57,5 @@ class TLBO(EvolutionaryAlgorithm):
             self.mutation.mutate(population, optimize_function)
             self.crossover.cross(population, optimize_function)
 
-            best_val = population.get_best_value()
-
-            if super().termination_criterion(best_val, opt_val, iteration):
-                return best_val
+        best_val = population.get_best_value()
         return best_val
